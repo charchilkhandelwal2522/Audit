@@ -1,0 +1,17 @@
+{
+    "name": "Audit",
+    "alias": "audit",
+    "description": "Audit & Store Check Module for internal checks, audits, and regular store/department visits with standardized templates, proof submission, automatic scoring, and performance tracking.",
+    "keywords": ["audit", "store check", "inspection", "compliance"],
+    "active": 1,
+    "order": 3,
+    "providers": [
+        "Modules\\Audit\\Providers\\AuditServiceProvider",
+        "Modules\\Audit\\Providers\\EventServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ]
+}
+

@@ -1,0 +1,201 @@
+@extends('layouts.app')
+
+@push('datatable-styles')
+    @include('sections.datatable_css')
+@endpush
+
+@section('filter-section')
+    <x-filters.filter-box>
+        <!-- DEPARTMENT START -->
+        <div class="select-box d-flex py-2 pr-2 border-right-grey border-right-grey-sm-0">
+            <p class="mb-0 pr-2 f-14 text-dark-grey d-flex align-items-center">@lang('audit::app.department')</p>
+            <div class="select-status">
+                <select class="form-control select-picker" name="department_id" id="department_id" data-live-search="true" data-size="8">
+                    <option value="all">@lang('app.all')</option>
+                    @foreach ($departments as $department)
+                        <option value="{{ $department->id }}">{{ $department->team_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+        <!-- DEPARTMENT END -->
+
+        <!-- AUDITOR START -->
+        @if($viewPermission == 'all')
+        <div class="select-box d-flex py-2 px-lg-3 px-md-3 px-0 border-right-grey border-right-grey-sm-0">
+            <p class="mb-0 pr-2 f-14 text-dark-grey d-flex align-items-center">@lang('audit::app.auditor')</p>
+            <div class="select-status">
+                <select class="form-control select-picker" name="auditor_id" id="auditor_id" data-live-search="true" data-size="8">
+                    <option value="all">@lang('app.all')</option>
+                    @foreach ($auditors as $auditor)
+                        <x-user-option :user="$auditor"></x-user-option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+        @endif
+        <!-- AUDITOR END -->
+
+        <!-- STATUS START -->
+        <div class="select-box d-flex py-2 px-lg-3 px-md-3 px-0 border-right-grey border-right-grey-sm-0">
+            <p class="mb-0 pr-2 f-14 text-dark-grey d-flex align-items-center">@lang('app.status')</p>
+            <div class="select-status">
+                <select class="form-control select-picker" name="status" id="filter_status">
+                    <option value="all">@lang('app.all')</option>
+                    @foreach ($statuses as $status)
+                        <option value="{{ $status }}">{{ ucwords(str_replace('_', ' ', $status)) }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+        <!-- STATUS END -->
+
+        <!-- SEARCH START -->
+        <div class="task-search d-flex py-1 px-lg-3 px-0 border-right-grey align-items-center">
+            <form class="w-100 mr-1 mr-lg-0 mr-md-1 ml-md-1 ml-0 ml-lg-0">
+                <div class="input-group bg-grey rounded">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text border-0 bg-additional-grey">
+                            <i class="fa fa-search f-13 text-dark-grey"></i>
+                        </span>
+                    </div>
+                    <input type="text" class="form-control f-14 p-1 border-additional-grey" id="search-text-field" placeholder="@lang('app.startTyping')">
+                </div>
+            </form>
+        </div>
+        <!-- SEARCH END -->
+
+        <!-- RESET START -->
+        <div class="select-box d-flex py-2 px-lg-3 px-md-3 px-0">
+            <x-forms.button-secondary class="btn-xs d-none" id="reset-filters" icon="times-circle">
+                @lang('app.clearFilters')
+            </x-forms.button-secondary>
+        </div>
+        <!-- RESET END -->
+    </x-filters.filter-box>
+@endsection
+
+@php
+    $addPermission = user()->permission('add_audit');
+@endphp
+
+@section('content')
+    <!-- CONTENT WRAPPER START -->
+    <div class="content-wrapper">
+        <!-- Add Audit Button -->
+        <div class="d-grid d-lg-flex d-md-flex action-bar">
+            <div id="table-actions" class="flex-grow-1 align-items-center d-flex">
+                @if ($addPermission == 'all' || $addPermission == 'added')
+                    <x-forms.link-primary :link="route('audits.create')" class="mr-3 openRightModal float-left" icon="plus">
+                        @lang('audit::app.createAudit')
+                    </x-forms.link-primary>
+                @endif
+            </div>
+
+            <div class="btn-group mt-2 mt-lg-0 mt-md-0 ml-0 ml-lg-3 ml-md-3" role="group">
+                <a href="{{ route('audits.index') }}" class="btn btn-secondary f-14 btn-active" data-toggle="tooltip" data-original-title="@lang('audit::app.audits')">
+                    <i class="fa fa-clipboard-check"></i>
+                </a>
+                <a href="{{ route('audit-templates.index') }}" class="btn btn-secondary f-14" data-toggle="tooltip" data-original-title="@lang('audit::app.auditTemplates')">
+                    <i class="fa fa-file-alt"></i>
+                </a>
+            </div>
+        </div>
+        <!-- End Add Audit Button -->
+
+        <!-- Audit Table -->
+        <div class="d-flex flex-column w-tables rounded mt-3 bg-white">
+            {!! $dataTable->table(['class' => 'table table-hover border-0 w-100']) !!}
+        </div>
+        <!-- End Audit Table -->
+    </div>
+    <!-- CONTENT WRAPPER END -->
+@endsection
+
+@push('scripts')
+    @include('sections.datatable_js')
+
+    <script>
+        $('#audits-table').on('preXhr.dt', function(e, settings, data) {
+            data['department_id'] = $('#department_id').val();
+            data['auditor_id'] = $('#auditor_id').val();
+            data['status'] = $('#filter_status').val();
+            data['searchText'] = $('#search-text-field').val();
+        });
+
+        const showTable = () => {
+            window.LaravelDataTables["audits-table"].draw(true);
+        }
+
+        $('#department_id, #auditor_id, #filter_status').on('change', function() {
+            if ($('#department_id').val() != "all" || $('#auditor_id').val() != "all" || $('#filter_status').val() != "all") {
+                $('#reset-filters').removeClass('d-none');
+            } else {
+                $('#reset-filters').addClass('d-none');
+            }
+            showTable();
+        });
+
+        $('#search-text-field').on('keyup', function() {
+            if ($('#search-text-field').val() != "") {
+                $('#reset-filters').removeClass('d-none');
+            }
+            showTable();
+        });
+
+        $('#reset-filters').click(function() {
+            $('#department_id').val('all');
+            $('#auditor_id').val('all');
+            $('#filter_status').val('all');
+            $('#search-text-field').val('');
+            $('.filter-box .select-picker').selectpicker("refresh");
+            $('#reset-filters').addClass('d-none');
+            showTable();
+        });
+
+        $('body').on('click', '.delete-table-row', function() {
+            var id = $(this).data('audit-id');
+            Swal.fire({
+                title: "@lang('messages.sweetAlertTitle')",
+                text: "@lang('messages.recoverRecord')",
+                icon: 'warning',
+                showCancelButton: true,
+                focusConfirm: false,
+                confirmButtonText: "@lang('messages.confirmDelete')",
+                cancelButtonText: "@lang('app.cancel')",
+                customClass: {
+                    confirmButton: 'btn btn-primary mr-3',
+                    cancelButton: 'btn btn-secondary'
+                },
+                showClass: {
+                    popup: 'swal2-noanimation',
+                    backdrop: 'swal2-noanimation'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var url = "{{ route('audits.destroy', ':id') }}";
+                    url = url.replace(':id', id);
+
+                    var token = "{{ csrf_token() }}";
+
+                    $.easyAjax({
+                        type: 'POST',
+                        url: url,
+                        blockUI: true,
+                        data: {
+                            '_token': token,
+                            '_method': 'DELETE'
+                        },
+                        success: function(response) {
+                            if (response.status == "success") {
+                                showTable();
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+@endpush
+

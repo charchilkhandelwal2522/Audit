@@ -1,0 +1,186 @@
+<?php
+
+return [
+    // Menu and Navigation
+    'audit' => 'Audit',
+    'audits' => 'Audits',
+    'allAudits' => 'All Audits',
+    'myAudits' => 'My Audits',
+    'auditTemplates' => 'Audit Templates',
+    'auditSettings' => 'Audit Settings',
+
+    // Template Management
+    'addTemplate' => 'Add Template',
+    'createTemplate' => 'Create Audit Template',
+    'editTemplate' => 'Edit Audit Template',
+    'templateTitle' => 'Template Title',
+    'enterTemplateTitle' => 'eg., Daily Store Opening Checklist',
+    'templateDescription' => 'Add a brief description of what this audit cover...',
+    'templateCreated' => 'Template created successfully',
+    'templatePreview' => 'Template Preview',
+    'templateInfo' => 'Template Information',
+    'averageCheckpoints' => 'Average Checkpoints',
+    'departmentCount' => 'Departments Covered',
+    'activeTemplates' => 'Active Templates',
+    'totalTemplates' => 'Total Templates',
+
+    // Checkpoints
+    'checkpoints' => 'Checkpoints',
+    'checkpoint' => 'Checkpoint',
+    'checkpointTitle' => 'Checkpoint Title',
+    'enterCheckpointTitle' => 'Enter checkpoint title',
+    'checkpointDescription' => 'Enter checkpoint description (optional)',
+    'addCheckpoint' => 'Add Checkpoint',
+    'checkpointsHelp' => 'Add the checkpoints/questions that auditors will need to complete during the audit.',
+    'atLeastOneCheckpoint' => 'At least one checkpoint is required.',
+    'dragToReorder' => 'Drag and drop to reorder checkpoints',
+    'requiresFileUpload' => 'Requires File Upload',
+    'requiresPhoto' => 'Requires Photo',
+    'requiresNotes' => 'Requires Notes',
+    'mandatory' => 'Mandatory',
+    'requirements' => 'Requirements',
+    'file' => 'File',
+    'photo' => 'Photo',
+    'notes' => 'Notes',
+    'requiresFile' => 'Requires File',
+    'checkpointUpdated' => 'Checkpoint saved successfully',
+    'checkpointResponses' => 'Checkpoint Responses',
+    'checkpointsCompleted' => 'Checkpoints Completed',
+
+    // Audit
+    'createAudit' => 'Create New Audit',
+    'newAuditInitiation' => 'New Audit Initiation',
+    'newAuditInitiationInfo' => 'Select the department, auditee, and template to begin.',
+    'executeAudit' => 'Execute Audit',
+    'continueAudit' => 'Continue Audit',
+    'completeAudit' => 'Complete Audit',
+    'cancelAudit' => 'Cancel Audit',
+    'auditStarted' => 'Audit started successfully. Timer is running.',
+    'auditCompleted' => 'Audit completed successfully!',
+    'auditCancelled' => 'Audit has been cancelled.',
+    'template' => 'Template',
+    'selectTemplate' => 'Select Template',
+    'selectAuditTemplate' => 'Select Audit Template',
+    'availableTemplatesInfo' => 'Available templates for the selected department will appear here.',
+    'noTemplatesForDepartment' => 'No templates available for this department.',
+    'noDescription' => 'No description available.',
+    'selectDepartmentFirst' => 'Select department first',
+    'reviewAndBegin' => 'Review and Begin',
+    'reviewAndBeginInfo' => 'Please confirm your selections are correct before starting. The audit timer will begin immediately after you click the button below.',
+    'beginAudit' => 'Begin Audit',
+    'startAudit' => 'Start Audit',
+
+    // Department and Users
+    'department' => 'Department',
+    'selectDepartment' => 'Select Department',
+    'selectDepartmentAndAuditee' => 'Select Department & Auditee',
+    'chooseDepartment' => 'Choose a department...',
+    'choosePerson' => 'Choose a person...',
+    'personResponsible' => 'Person Responsible (Auditee)',
+    'auditor' => 'Auditor',
+    'auditee' => 'Auditee',
+    'selectAuditee' => 'Select Person to Audit',
+    'youAreTheAuditor' => 'You will be the auditor',
+
+    // Location
+    'location' => 'Location',
+    'storeLocationPlaceholder' => 'e.g., Store #123, Main Branch',
+
+    // Status
+    'completed' => 'Completed',
+    'partiallyCompleted' => 'Partially Completed',
+    'partial' => 'Partial',
+    'notCompleted' => 'Not Completed',
+    'inProgress' => 'In Progress',
+    'cancelled' => 'Cancelled',
+    'completionStatus' => 'Completion Status',
+
+    // Time and Duration
+    'startedAt' => 'Started At',
+    'completedAt' => 'Completed At',
+    'duration' => 'Duration',
+    'timeElapsed' => 'Time Elapsed',
+
+    // Scoring
+    'score' => 'Score',
+    'progress' => 'Progress',
+    'overallScore' => 'Overall Score',
+
+    // File Upload
+    'uploadPhotoOrFile' => 'Upload Photo or File',
+    'uploadFile' => 'Upload File',
+    'uploadEvidence' => 'Upload Evidence',
+    'photoRequired' => 'Photo Required',
+    'dragDropText' => 'Drag & drop photos here or click to browse',
+    'maxFileSize' => 'Maximum file size: 10MB',
+    'files' => 'Files',
+    'saved' => 'Saved',
+
+    // Confirmations
+    'completeAuditConfirm' => 'Complete this audit?',
+    'completeAuditConfirmText' => 'Once completed, you cannot make any more changes. The score will be calculated and results will be sent to relevant parties.',
+    'yesComplete' => 'Yes, Complete',
+    'cancelAuditConfirm' => 'Cancel this audit?',
+    'cancelAuditConfirmText' => 'This action cannot be undone. All progress will be lost.',
+    'yesCancel' => 'Yes, Cancel',
+    'completeMandatoryFirst' => 'Please complete all mandatory checkpoints before finishing the audit.',
+
+    // Notes and Summary
+    'enterNotes' => 'Enter notes...',
+    'optionalComments' => 'Optional Comments',
+    'addNotesPlaceholder' => 'Add any relevant notes here...',
+    'summary' => 'Summary',
+
+    // Navigation
+    'step' => 'Step',
+    'previousStep' => 'Previous Step',
+    'nextStep' => 'Next Step',
+    'finish' => 'Finish',
+    'submitAudit' => 'Submit Audit',
+    'saveAndExit' => 'Save & Exit',
+
+    // Export
+    'exportPdf' => 'Export PDF',
+
+    // Settings
+    'scoringSettings' => 'Scoring Settings',
+    'notificationSettings' => 'Notification Settings',
+    'partialCompletionWeight' => 'Partial Completion Weight',
+    'partialCompletionWeightHelp' => 'Weight for partially completed items (0-1). Default is 0.5 (50%).',
+    'scoreThresholdAlert' => 'Score Threshold Alert',
+    'scoreThresholdAlertHelp' => 'Send alerts when score is below this threshold.',
+    'sendResultToManager' => 'Send results to department manager',
+    'sendResultToAuditee' => 'Send results to person being audited',
+    'generatePdfReport' => 'Generate PDF report automatically',
+
+    // My Audits
+    'myAuditsInfo' => 'This page shows all audits where you are the person being audited.',
+
+    // Validation Messages
+    'validation' => [
+        'titleRequired' => 'Template title is required.',
+        'departmentRequired' => 'Please select a department.',
+        'checkpointsRequired' => 'At least one checkpoint is required.',
+        'checkpointsMin' => 'At least one checkpoint is required.',
+        'checkpointTitleRequired' => 'Checkpoint title is required.',
+        'templateRequired' => 'Please select an audit template.',
+        'auditeeRequired' => 'Please select a person to audit.',
+        'statusRequired' => 'Status is required.',
+        'statusInvalid' => 'Invalid status selected.',
+        'fileTooLarge' => 'File size must not exceed 10MB.',
+    ],
+
+    // Notifications
+    'notifications' => [
+        'auditCompleted' => 'Audit Completed',
+        'auditCompletedSubject' => 'Audit Completed - :template',
+        'auditCompletedLine1' => 'An audit has been completed with a score of :score%.',
+        'auditCompletedLine2' => 'Department: :department',
+        'auditCompletedLine3' => 'Auditor: :auditor',
+        'auditCompletedLine4' => 'Duration: :duration',
+        'viewAuditDetails' => 'View Audit Details',
+    ],
+
+    'of' => 'of',
+];
+
