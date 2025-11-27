@@ -113,6 +113,17 @@
         border-color: #007bff;
         background: #e7f1ff;
     }
+    .dropzone-area.uploading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+    .dropzone-area.uploading .dropzone-icon i {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
     .dropzone-icon {
         font-size: 32px;
         color: #99a5b5;
@@ -323,18 +334,36 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 8px 10px;
-        border-radius: 6px;
-        margin-bottom: 4px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        margin-bottom: 6px;
         cursor: pointer;
-        transition: background 0.2s ease;
+        transition: all 0.2s ease;
         font-size: 13px;
+        border-left: 4px solid transparent;
     }
     .checkpoint-item:hover {
         background: #f8f9fa;
     }
     .checkpoint-item.active {
         background: #e7f1ff;
+        border-left-color: #007bff;
+    }
+    .checkpoint-item.status-completed {
+        background: #d4edda;
+        border-left-color: #28a745;
+    }
+    .checkpoint-item.status-partial {
+        background: #fff3cd;
+        border-left-color: #ffc107;
+    }
+    .checkpoint-item.status-not-completed {
+        background: #f8f9fa;
+        border-left-color: #6c757d;
+    }
+    .checkpoint-item.status-pending {
+        background: #fff;
+        border-left-color: transparent;
     }
     .checkpoint-item .status-icon {
         width: 20px;
@@ -351,7 +380,11 @@
         color: #fff;
     }
     .checkpoint-item .status-icon.partial {
-        background: #fd7e14;
+        background: #ffc107;
+        color: #fff;
+    }
+    .checkpoint-item .status-icon.not-completed {
+        background: #6c757d;
         color: #fff;
     }
     .checkpoint-item .status-icon.pending {
@@ -368,6 +401,10 @@
         overflow: hidden;
         text-overflow: ellipsis;
         color: #333;
+    }
+    .checkpoint-item.active .checkpoint-text {
+        color: #007bff;
+        font-weight: 600;
     }
     .sidebar-actions {
         margin-top: 20px;
@@ -545,14 +582,30 @@
                 <div class="checkpoints-list-title">@lang('audit::app.checkpoints')</div>
                 <div class="checkpoints-list">
                     @foreach($audit->responses as $index => $response)
-                    <div class="checkpoint-item {{ $index == 0 ? 'active' : '' }}" data-index="{{ $index }}" data-response-id="{{ $response->id }}">
-                        <span class="status-icon {{ $index == 0 ? 'current' : ($response->responded_at ? ($response->status == 'completed' ? 'completed' : 'partial') : 'pending') }}" id="sidebar-icon-{{ $response->id }}">
+                    @php
+                        $itemStatusClass = 'status-pending';
+                        if ($index == 0) {
+                            $itemStatusClass = 'active';
+                        } elseif ($response->responded_at) {
+                            if ($response->status == 'completed') {
+                                $itemStatusClass = 'status-completed';
+                            } elseif ($response->status == 'partially_completed') {
+                                $itemStatusClass = 'status-partial';
+                            } elseif ($response->status == 'not_completed') {
+                                $itemStatusClass = 'status-not-completed';
+                            }
+                        }
+                    @endphp
+                    <div class="checkpoint-item {{ $itemStatusClass }}" data-index="{{ $index }}" data-response-id="{{ $response->id }}">
+                        <span class="status-icon {{ $index == 0 ? 'current' : ($response->responded_at ? ($response->status == 'completed' ? 'completed' : ($response->status == 'partially_completed' ? 'partial' : 'not-completed')) : 'pending') }}" id="sidebar-icon-{{ $response->id }}">
                             @if($index == 0)
                                 <i class="fa fa-arrow-right"></i>
                             @elseif($response->responded_at && $response->status == 'completed')
                                 <i class="fa fa-check"></i>
                             @elseif($response->responded_at && $response->status == 'partially_completed')
-                                <i class="fa fa-minus"></i>
+                                <i class="fa fa-exclamation"></i>
+                            @elseif($response->responded_at && $response->status == 'not_completed')
+                                <i class="fa fa-times"></i>
                             @else
                                 {{ $index + 1 }}
                             @endif
@@ -683,10 +736,16 @@ $(document).ready(function() {
         formData.append('notes', $('#notes_' + responseId).val());
 
         const fileInput = $('#file-input-' + responseId)[0];
-        if (fileInput && fileInput.files.length > 0) {
+        const $dropzone = $('#dropzone-' + responseId);
+        const hasFiles = fileInput && fileInput.files.length > 0;
+
+        if (hasFiles) {
             for (let i = 0; i < fileInput.files.length; i++) {
                 formData.append('files[]', fileInput.files[i]);
             }
+            // Show uploading state
+            $dropzone.addClass('uploading');
+            $dropzone.find('.dropzone-text').text('@lang("audit::app.uploading")...');
         }
 
         const url = "{{ route('audits.update-checkpoint', [$audit->id, ':response']) }}".replace(':response', responseId);
@@ -698,6 +757,10 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
+                // Reset dropzone state
+                $dropzone.removeClass('uploading');
+                $dropzone.find('.dropzone-text').text('@lang("audit::app.dragDropText")');
+
                 if (response.status == 'success') {
                     updateSidebarIcon(responseId, $('#status_' + responseId).val());
                     updateProgress(response.responded, response.total);
@@ -708,7 +771,7 @@ $(document).ready(function() {
                     }
 
                     // Reload uploaded files if new files were added
-                    if (response.files) {
+                    if (response.files && response.files.length > 0) {
                         const $container = $('#uploaded-files-' + responseId);
                         response.files.forEach(function(file) {
                             if ($('#file-' + file.id).length === 0) {
@@ -726,21 +789,59 @@ $(document).ready(function() {
                         });
                     }
                 }
+            },
+            error: function(xhr, status, error) {
+                // Reset dropzone state
+                $dropzone.removeClass('uploading');
+                $dropzone.find('.dropzone-text').text('@lang("audit::app.dragDropText")');
+
+                // Clear file input on error
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+
+                console.error('Upload error:', error);
+                console.error('Response:', xhr.responseText);
+                Swal.fire({
+                    icon: 'error',
+                    title: '@lang("audit::app.uploadError")',
+                    text: xhr.responseJSON ? xhr.responseJSON.message : '@lang("audit::app.failedToSave")',
+                    customClass: { confirmButton: 'btn btn-primary' },
+                    buttonsStyling: false
+                });
             }
         });
     }
 
-    // Update sidebar icon
+    // Update sidebar icon and item background
     function updateSidebarIcon(responseId, status) {
         const $icon = $('#sidebar-icon-' + responseId);
-        $icon.removeClass('completed partial pending current');
+        const $item = $icon.closest('.checkpoint-item');
+
+        // Update icon
+        $icon.removeClass('completed partial not-completed pending current');
 
         if (status === 'completed') {
             $icon.addClass('completed').html('<i class="fa fa-check"></i>');
         } else if (status === 'partially_completed') {
-            $icon.addClass('partial').html('<i class="fa fa-minus"></i>');
+            $icon.addClass('partial').html('<i class="fa fa-exclamation"></i>');
+        } else if (status === 'not_completed') {
+            $icon.addClass('not-completed').html('<i class="fa fa-times"></i>');
         } else {
             $icon.addClass('pending');
+        }
+
+        // Update item background
+        $item.removeClass('status-completed status-partial status-not-completed status-pending active');
+
+        if (status === 'completed') {
+            $item.addClass('status-completed');
+        } else if (status === 'partially_completed') {
+            $item.addClass('status-partial');
+        } else if (status === 'not_completed') {
+            $item.addClass('status-not-completed');
+        } else {
+            $item.addClass('status-pending');
         }
     }
 
@@ -756,11 +857,7 @@ $(document).ready(function() {
         $('.checkpoint-step').hide();
         $('.checkpoint-step[data-index="' + index + '"]').show();
 
-        // Update sidebar active state
-        $('.checkpoint-item').removeClass('active');
-        $('.checkpoint-item[data-index="' + index + '"]').addClass('active');
-
-        // Update current icon
+        // Update previous active item - restore its status color
         $('.checkpoint-item .status-icon.current').each(function() {
             const respId = $(this).closest('.checkpoint-item').data('response-id');
             const status = $('#status_' + respId).val();
@@ -768,9 +865,15 @@ $(document).ready(function() {
             updateSidebarIcon(respId, status);
         });
 
+        // Update sidebar active state - remove active from all, add to current
+        $('.checkpoint-item').removeClass('active');
+        const $currentItem = $('.checkpoint-item[data-index="' + index + '"]');
+        $currentItem.removeClass('status-completed status-partial status-not-completed status-pending').addClass('active');
+
+        // Update current icon to show arrow
         const currentResponseId = responses[index];
         const $currentIcon = $('#sidebar-icon-' + currentResponseId);
-        $currentIcon.removeClass('completed partial pending').addClass('current').html('<i class="fa fa-arrow-right"></i>');
+        $currentIcon.removeClass('completed partial not-completed pending').addClass('current').html('<i class="fa fa-arrow-right"></i>');
 
         // Update button states
         $('#prev-step').prop('disabled', index === 0);

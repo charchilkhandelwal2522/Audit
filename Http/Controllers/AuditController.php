@@ -179,6 +179,7 @@ class AuditController extends AccountBaseController
         $response->save();
 
         // Handle file uploads
+        $uploadedFiles = [];
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 $hashname = Files::uploadLocalOrS3($file, 'audit-files');
@@ -191,7 +192,7 @@ class AuditController extends AccountBaseController
                     $fileType = 'pdf';
                 }
 
-                AuditFile::create([
+                $auditFile = AuditFile::create([
                     'audit_id' => $audit->id,
                     'checkpoint_response_id' => $response->id,
                     'filename' => $file->getClientOriginalName(),
@@ -200,6 +201,14 @@ class AuditController extends AccountBaseController
                     'size' => $file->getSize(),
                     'added_by' => user()->id,
                 ]);
+
+                $uploadedFiles[] = [
+                    'id' => $auditFile->id,
+                    'filename' => $auditFile->filename,
+                    'url' => $auditFile->file_url,
+                    'is_image' => $auditFile->isImage(),
+                    'icon' => $auditFile->icon,
+                ];
             }
         }
 
@@ -213,6 +222,7 @@ class AuditController extends AccountBaseController
             'progress' => $audit->progress_percentage,
             'responded' => $totalResponded,
             'total' => $totalResponses,
+            'files' => $uploadedFiles,
         ]);
     }
 
@@ -221,7 +231,7 @@ class AuditController extends AccountBaseController
      */
     public function complete($id)
     {
-        $audit = Audit::with(['responses.checkpoint', 'auditor', 'auditee', 'template', 'department'])
+        $audit = Audit::with(['responses.checkpoint', 'responses.files', 'auditor', 'auditee', 'template', 'department'])
             ->findOrFail($id);
 
         abort_403($audit->auditor_id != user()->id);
@@ -237,6 +247,38 @@ class AuditController extends AccountBaseController
 
         if ($mandatoryNotResponded > 0) {
             return Reply::error(__('audit::app.completeMandatoryFirst'));
+        }
+
+        // Check if all requirements are met for each responded checkpoint
+        $missingRequirements = [];
+
+        foreach ($audit->responses as $response) {
+            $checkpoint = $response->checkpoint;
+
+            // Check photo requirement
+            if ($checkpoint->requires_photo) {
+                $hasPhoto = $response->files()->where('file_type', 'image')->exists();
+                if (!$hasPhoto) {
+                    $missingRequirements[] = __('audit::app.photoRequiredFor', ['checkpoint' => $checkpoint->title]);
+                }
+            }
+
+            // Check file upload requirement
+            if ($checkpoint->requires_file_upload && !$checkpoint->requires_photo) {
+                $hasFile = $response->files()->exists();
+                if (!$hasFile) {
+                    $missingRequirements[] = __('audit::app.fileRequiredFor', ['checkpoint' => $checkpoint->title]);
+                }
+            }
+
+            // Check notes requirement
+            if ($checkpoint->requires_notes && empty($response->notes)) {
+                $missingRequirements[] = __('audit::app.notesRequiredFor', ['checkpoint' => $checkpoint->title]);
+            }
+        }
+
+        if (!empty($missingRequirements)) {
+            return Reply::error(implode('<br>', $missingRequirements));
         }
 
         // Complete the audit

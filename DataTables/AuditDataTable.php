@@ -101,7 +101,16 @@ class AuditDataTable extends BaseDataTable
                 return $row->duration_formatted;
             })
             ->editColumn('started_at', function ($row) {
-                return $row->started_at ? $row->started_at->translatedFormat($this->company->date_format . ' ' . $this->company->time_format) : '--';
+                return $row->started_at ? $row->started_at->translatedFormat($this->company->date_format) : '--';
+            })
+            ->editColumn('started_time', function ($row) {
+                return $row->started_at ? $row->started_at->translatedFormat($this->company->time_format) : '--';
+            })
+            ->editColumn('ended_at', function ($row) {
+                return $row->completed_at ? $row->completed_at->translatedFormat($this->company->date_format) : '--';
+            })
+            ->editColumn('completed_time', function ($row) {
+                return $row->completed_at ? $row->completed_at->translatedFormat($this->company->time_format) : '--';
             })
             ->addIndexColumn()
             ->setRowId(fn($row) => 'row-' . $row->id)
@@ -193,12 +202,15 @@ class AuditDataTable extends BaseDataTable
             __('audit::app.score') => ['data' => 'score', 'name' => 'score', 'title' => __('audit::app.score')],
             __('audit::app.duration') => ['data' => 'duration', 'name' => 'duration_seconds', 'title' => __('audit::app.duration')],
             __('audit::app.startedAt') => ['data' => 'started_at', 'name' => 'started_at', 'title' => __('audit::app.startedAt')],
+            __('audit::app.startedTime') => ['data' => 'started_time', 'name' => 'started_time', 'title' => __('audit::app.startedTime')],
+            __('audit::app.endedAt') => ['data' => 'ended_at', 'name' => 'ended_at', 'title' => __('audit::app.endedAt')],
+            __('audit::app.completedTime') => ['data' => 'completed_time', 'name' => 'completed_time', 'title' => __('audit::app.completedTime')],
             Column::computed('action', __('app.action'))
                 ->exportable(false)
                 ->printable(false)
                 ->orderable(false)
                 ->searchable(false)
-                ->width(150)
+                ->width(30)
                 ->addClass('text-right pr-20'),
         ];
     }

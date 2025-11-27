@@ -115,6 +115,9 @@ return [
     'maxFileSize' => 'Maximum file size: 10MB',
     'files' => 'Files',
     'saved' => 'Saved',
+    'uploading' => 'Uploading',
+    'uploadError' => 'Upload Error',
+    'failedToSave' => 'Failed to save checkpoint',
 
     // Confirmations
     'completeAuditConfirm' => 'Complete this audit?',
@@ -124,6 +127,9 @@ return [
     'cancelAuditConfirmText' => 'This action cannot be undone. All progress will be lost.',
     'yesCancel' => 'Yes, Cancel',
     'completeMandatoryFirst' => 'Please complete all mandatory checkpoints before finishing the audit.',
+    'photoRequiredFor' => 'Photo is required for: :checkpoint',
+    'fileRequiredFor' => 'File upload is required for: :checkpoint',
+    'notesRequiredFor' => 'Notes are required for: :checkpoint',
 
     // Notes and Summary
     'enterNotes' => 'Enter notes...',
@@ -182,5 +188,15 @@ return [
     ],
 
     'of' => 'of',
+    'startedTime' => 'Started Time',
+    'completedTime' => 'Completed Time',
+    'endedAt' => 'Ended At',
+    'endedTime' => 'Ended Time',
+    'startedAt' => 'Started At',
+    'startedTime' => 'Started Time',
+    'completedAt' => 'Completed At',
+    'completedTime' => 'Completed Time',
+    'endedAt' => 'Ended At',
+    'endedTime' => 'Ended Time',
 ];
 
