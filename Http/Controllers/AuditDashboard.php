@@ -4,9 +4,12 @@ namespace Modules\Audit\Http\Controllers;
 
 use App\Http\Controllers\AccountBaseController;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Modules\Audit\Entities\Audit;
+use Modules\Audit\Exports\AuditExport;
 use App\Models\Team;
 use App\Models\User;
+use Carbon\Carbon;
 
 class AuditDashboard extends AccountBaseController
 {
@@ -39,6 +42,8 @@ class AuditDashboard extends AccountBaseController
         $this->auditsPassed = Audit::where('status', Audit::STATUS_COMPLETED)
             ->where('score', '>=', 85)
             ->count();
+
+        $this->statuses = array_keys(Audit::STATUSES);
 
         // Score distribution for chart
         $this->scoreDistribution = [
@@ -102,33 +107,65 @@ class AuditDashboard extends AccountBaseController
     {
         $perPage = $request->get('per_page', 5);
 
-        $query = Audit::with(['template', 'department', 'auditor', 'auditee'])
-            ->where('status', Audit::STATUS_COMPLETED);
+        $query = Audit::with(['template', 'department', 'auditor', 'auditee']);
 
         // Apply filters
         if ($request->department_id && $request->department_id != 'all') {
             $query->where('department_id', $request->department_id);
         }
 
-        if ($request->auditor_id && $request->auditor_id != 'all') {
-            $query->where('auditor_id', $request->auditor_id);
+        if ($request->status && $request->status != 'all') {
+            $query->where('status', $request->status);
         }
 
-        if ($request->auditee_id && $request->auditee_id != 'all') {
-            $query->where('auditee_id', $request->auditee_id);
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', '%' . $search . '%')
+                    ->orWhereHas('auditor', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('auditee', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('department', function ($q) use ($search) {
+                        $q->where('team_name', 'like', '%' . $search . '%');
+                    });
+            });
         }
 
-        if ($request->date_range) {
-            $dates = explode(' - ', $request->date_range);
-            if (count($dates) == 2) {
-                $startDate = \Carbon\Carbon::createFromFormat(company()->date_format, trim($dates[0]))->startOfDay();
-                $endDate = \Carbon\Carbon::createFromFormat(company()->date_format, trim($dates[1]))->endOfDay();
-                $query->whereBetween('completed_at', [$startDate, $endDate]);
-            }
+        if ($request->start_date && $request->end_date) {
+            $startDate = Carbon::createFromFormat(company()->date_format, $request->start_date)->startOfDay();
+            $endDate = Carbon::createFromFormat(company()->date_format, $request->end_date)->endOfDay();
+            $query->whereBetween('created_at', [$startDate, $endDate]);
         }
 
-        $audits = $query->orderBy('completed_at', 'desc')->paginate($perPage);
+        $audits = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json($audits);
+    }
+
+    /**
+     * Export audit history to Excel
+     */
+    public function export(Request $request)
+    {
+        $departmentId = $request->department_id;
+        $status = $request->status;
+        $search = $request->search;
+        $startDate = null;
+        $endDate = null;
+
+        if ($request->start_date && $request->end_date) {
+            $startDate = Carbon::createFromFormat(company()->date_format, $request->start_date)->startOfDay();
+            $endDate = Carbon::createFromFormat(company()->date_format, $request->end_date)->endOfDay();
+        }
+
+        $filename = 'audit-history-' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(
+            new AuditExport($departmentId, $status, $search, $startDate, $endDate),
+            $filename
+        );
     }
 }

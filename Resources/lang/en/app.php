@@ -90,6 +90,7 @@ return [
     'completed' => 'Completed',
     'partiallyCompleted' => 'Partially Completed',
     'partial' => 'Partial',
+    'in_progress' => 'In Progress',
     'notCompleted' => 'Not Completed',
     'inProgress' => 'In Progress',
     'cancelled' => 'Cancelled',
@@ -249,5 +250,11 @@ return [
     // Dashboard Stats
     'auditsInProgress' => 'Audits In Progress',
     'failedAudits' => 'Failed Audits',
+    
+    // Audit History
+    'auditId' => 'Audit ID',
+    'allStatuses' => 'All Statuses',
+    'searchPlaceholder' => 'Search by ID, Auditee, Auditor...',
+    'failed' => 'Failed',
 ];
 

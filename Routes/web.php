@@ -22,8 +22,10 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
 
     // Audit Dashboard
     Route::prefix('audit')->group(function () {
-        Route::resource('audit-dashboard', AuditDashboard::class);
+        // These routes must be BEFORE the resource route to avoid being matched as {audit-dashboard} param
         Route::get('audit-dashboard/audits', [AuditDashboard::class, 'dashboardAudits'])->name('audit-dashboard.audits');
+        Route::get('audit-dashboard/export', [AuditDashboard::class, 'export'])->name('audit-dashboard.export');
+        Route::resource('audit-dashboard', AuditDashboard::class);
 
         // Audit Reports
         Route::resource('audit-reports', AuditReportController::class);

@@ -2,9 +2,9 @@
     <div class="card-header">
         <h4>@lang('audit::app.auditHistory')</h4>
         <div class="header-actions">
-            <a href="{{ route('audits.index') }}" class="btn-export">
-                <i class="fa fa-list"></i> @lang('audit::app.viewAllAudits')
-            </a>
+            <button class="btn-export" id="exportAuditHistory">
+                <i class="fa fa-file-export"></i> @lang('app.exportExcel')
+            </button>
             @if(user()->permission('add_audit') == 'all' || user()->permission('add_audit') == 'added')
                 <a href="{{ route('audits.create') }}" class="btn-new-audit openRightModal">
                     <i class="fa fa-plus"></i> @lang('audit::app.startNewAudit')
@@ -13,46 +13,40 @@
         </div>
     </div>
 
-    <!-- Filters -->
     <div class="filter-row">
-        <div class="filter-item">
-            <label>@lang('audit::app.dateRange')</label>
-            <input type="text" id="dashboard_date_range" class="form-control" placeholder="@lang('audit::app.selectDateRange')">
+        <div class="filter-item" style="flex: 2;">
+            <div class="input-group bg-grey rounded">
+                <div class="input-group-prepend">
+                    <span class="input-group-text border bg-white" style="border-radius: 8px 0 0 8px;">
+                        <i class="fa fa-search text-muted"></i>
+                    </span>
+                </div>
+                <input type="text" class="form-control border" id="dashboard_search" 
+                    placeholder="@lang('audit::app.searchPlaceholder')" style="border-radius: 0 8px 8px 0;">
+            </div>
         </div>
         <div class="filter-item">
-            <label>@lang('audit::app.department')</label>
-            <select id="dashboard_department" class="form-control select-picker" data-live-search="true">
+            <select id="dashboard_department" class="form-control select-picker" data-live-search="true" data-size="8">
                 <option value="all">@lang('audit::app.allDepartments')</option>
                 @foreach($departments as $department)
                     <option value="{{ $department->id }}">{{ $department->team_name }}</option>
                 @endforeach
             </select>
         </div>
-        <div class="filter-item">
-            <label>@lang('audit::app.auditor')</label>
-            <select id="dashboard_auditor" class="form-control select-picker" data-live-search="true">
-                <option value="all">@lang('audit::app.allAuditors')</option>
-                @foreach($auditors as $auditor)
-                    <option value="{{ $auditor->id }}">{{ $auditor->name }}</option>
-                @endforeach
-            </select>
+        <div class="select-status d-flex pr-2">
+            <div class="select-status d-flex border">
+                <input type="text" class="position-relative text-dark form-control border-0 p-2 text-left f-14 f-w-500 border-additional-grey"
+                    id="datatableRange" placeholder="@lang('placeholders.dateRange')"
+                    value="">
+            </div>
         </div>
         <div class="filter-item">
-            <label>@lang('audit::app.auditee')</label>
-            <select id="dashboard_auditee" class="form-control select-picker" data-live-search="true">
-                <option value="all">@lang('audit::app.allAuditees')</option>
-                @foreach($auditees as $auditee)
-                    <option value="{{ $auditee->id }}">{{ $auditee->name }}</option>
+            <select id="dashboard_status" class="form-control select-picker" data-size="8">
+                <option value="all">@lang('audit::app.allStatuses')</option>
+                @foreach($statuses as $status)
+                    <option value="{{ $status }}">{{ __('audit::app.' . $status) }}</option>
                 @endforeach
             </select>
-        </div>
-        <div class="filter-buttons">
-            <button type="button" class="btn-filter" id="applyDashboardFilters">
-                <i class="fa fa-filter"></i> @lang('audit::app.filter')
-            </button>
-            <button type="button" class="btn-clear" id="clearDashboardFilters">
-                @lang('audit::app.clear')
-            </button>
         </div>
     </div>
 
@@ -61,17 +55,22 @@
         <table class="audit-table" id="recentAuditsTable">
             <thead>
                 <tr>
-                    <th>@lang('audit::app.auditTitle')</th>
+                    <th>@lang('audit::app.auditId')</th>
                     <th>@lang('audit::app.department')</th>
                     <th>@lang('audit::app.auditor')</th>
                     <th>@lang('audit::app.auditee')</th>
-                    <th>@lang('audit::app.score')</th>
                     <th>@lang('app.date')</th>
+                    <th>@lang('audit::app.score')</th>
+                    <th>@lang('app.status')</th>
                     <th>@lang('app.action')</th>
                 </tr>
             </thead>
             <tbody id="recentAuditsBody">
-                <!-- Data loaded via AJAX -->
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        <i class="fa fa-spinner fa-spin"></i> @lang('app.loading')...
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>

@@ -192,22 +192,6 @@
             background: #f8fafc;
         }
 
-        .action-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            border: none;
-            background: #f1f5f9;
-            color: #64748b;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 2px;
-            cursor: pointer;
-        }
-        .action-btn:hover {
-            background: #e2e8f0;
-        }
     </style>
 @endpush
 
@@ -273,23 +257,28 @@
 @push('scripts')
     <script src="{{ asset('vendor/jquery/daterangepicker.min.js') }}"></script>
     <script>
-        
-        // Date Range Picker
-        $('#dashboard_date_range').daterangepicker({
-            autoUpdateInput: false,
-            locale: {
-                cancelLabel: '@lang("audit::app.clear")',
-                applyLabel: '@lang("audit::app.apply")',
-                format: '{{ company()->date_format }}'
+
+        $('#exportAuditHistory').click(function() {
+            var dateRangePicker = $('#datatableRange').data('daterangepicker');
+            var dateRangeVal = $('#datatableRange').val();
+            var startDate = '';
+            var endDate = '';
+
+            if (dateRangeVal !== '') {
+                startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
+                endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
             }
-        });
 
-        $('#dashboard_date_range').on('apply.daterangepicker', function(ev, picker) {
-            $(this).val(picker.startDate.format('{{ company()->moment_date_format }}') + ' - ' + picker.endDate.format('{{ company()->moment_date_format }}'));
-        });
-
-        $('#dashboard_date_range').on('cancel.daterangepicker', function(ev, picker) {
-            $(this).val('');
+            // Build export URL with current filters
+            let params = new URLSearchParams({
+                department_id: $('#dashboard_department').val() || 'all',
+                status: $('#dashboard_status').val() || 'all',
+                search: $('#dashboard_search').val() || '',
+                start_date: startDate,
+                end_date: endDate
+            });
+            
+            window.location.href = "{{ route('audit-dashboard.export') }}?" + params.toString();
         });
 
         // Dashboard filters and table
@@ -298,20 +287,52 @@
         function loadRecentAudits(page = 1) {
             currentPage = page;
 
+            var dateRangePicker = $('#datatableRange').data('daterangepicker');
+            var dateRangeVal = $('#datatableRange').val();
+            var startDate = null;
+            var endDate = null;
+
+            if (dateRangeVal !== '') {
+                startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
+                endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
+            }
+
             $.ajax({
                 url: "{{ route('audit-dashboard.audits') }}",
                 data: {
                     page: page,
-                    department_id: $('#dashboard_department').val(),
-                    auditor_id: $('#dashboard_auditor').val(),
-                    auditee_id: $('#dashboard_auditee').val(),
-                    date_range: $('#dashboard_date_range').val(),
+                    department_id: $('#dashboard_department').val() || 'all',
+                    status: $('#dashboard_status').val() || 'all',
+                    search: $('#dashboard_search').val() || '',
+                    start_date: startDate,
+                    end_date: endDate,
                     per_page: 5
                 },
                 success: function(response) {
                     renderAuditsTable(response);
+                },
+                error: function(xhr, status, error) {
+                    $('#recentAuditsBody').html('<tr><td colspan="8" class="text-center text-danger py-4">@lang("messages.errorOccured")</td></tr>');
                 }
             });
+        }
+
+        function getStatusBadge(status, score) {
+            if (status === 'completed') {
+                if (score < 60) {
+                    return '<span class="badge badge-danger" style="background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 4px;">@lang("audit::app.failed")</span>';
+                }
+                return '<span class="badge badge-success" style="background: #d1fae5; color: #059669; padding: 4px 12px; border-radius: 4px;">@lang("audit::app.completed")</span>';
+            } else if (status === 'in_progress') {
+                return '<span class="badge badge-warning" style="background: #fef3c7; color: #d97706; padding: 4px 12px; border-radius: 4px;">@lang("audit::app.inProgress")</span>';
+            } else if (status === 'cancelled') {
+                return '<span class="badge badge-secondary" style="background: #e2e8f0; color: #64748b; padding: 4px 12px; border-radius: 4px;">@lang("audit::app.cancelled")</span>';
+            }
+            return '-';
+        }
+
+        function formatAuditId(id) {
+            return '#AUD-' + String(id).padStart(4, '0');
         }
 
         function renderAuditsTable(response) {
@@ -319,28 +340,37 @@
             const audits = response.data || [];
 
             if (audits.length === 0) {
-                html = '<tr><td colspan="7" class="text-center text-muted py-4">@lang("messages.noRecordFound")</td></tr>';
+                html = '<tr><td colspan="8" class="text-center text-muted py-4">@lang("messages.noRecordFound")</td></tr>';
             } else {
                 audits.forEach(function(audit) {
-                    let scoreClass = 'high';
-                    if (audit.score < 60) scoreClass = 'low';
-                    else if (audit.score < 85) scoreClass = 'medium';
+                    let scoreDisplay = audit.status === 'completed' ? `<span class="font-weight-bold">${Math.round(audit.score)}%</span>` : '-';
+                    let dateDisplay = audit.completed_at ? new Date(audit.completed_at).toLocaleDateString('en-CA') : '-';
 
                     html += `
                         <tr>
-                            <td>${audit.template?.title || '-'}</td>
+                            <td class="font-weight-bold">${formatAuditId(audit.id)}</td>
                             <td>${audit.department?.team_name || '-'}</td>
                             <td>${audit.auditor?.name || '-'}</td>
                             <td>${audit.auditee?.name || '-'}</td>
-                            <td><span class="score-badge ${scoreClass}">${Math.round(audit.score)}%</span></td>
-                            <td>${audit.completed_at ? new Date(audit.completed_at).toLocaleDateString() : '-'}</td>
+                            <td>${dateDisplay}</td>
+                            <td>${scoreDisplay}</td>
+                            <td>${getStatusBadge(audit.status, audit.score)}</td>
                             <td>
-                                <a href="/account/audits/${audit.id}" class="action-btn" title="@lang('app.view')">
-                                    <i class="fa fa-eye"></i>
-                                </a>
-                                <a href="/account/audits/${audit.id}/export-pdf" class="action-btn" title="@lang('audit::app.exportPdf')">
-                                    <i class="fa fa-file-pdf"></i>
-                                </a>
+                                <div class="task_view">
+                                    <div class="dropdown">
+                                        <a class="task_view_more d-flex align-items-center justify-content-center dropdown-toggle" type="link" id="dropdownMenuLink-${audit.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="icon-options-vertical icons"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink-${audit.id}" tabindex="0">
+                                            <a href="{{ url('account/audits') }}/${audit.id}" class="dropdown-item openRightModal">
+                                                <i class="fa fa-eye mr-2"></i>@lang('app.view')
+                                            </a>
+                                            ${audit.status === 'completed' ? `<a href="{{ url('account/audits') }}/${audit.id}/export-pdf" class="dropdown-item">
+                                                <i class="fa fa-download mr-2"></i>@lang('audit::app.exportPdf')
+                                            </a>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -353,19 +383,41 @@
             if (response.total) {
                 const from = response.from || 0;
                 const to = response.to || 0;
-                $('#showingText').text(`Showing ${from} to ${to} of ${response.total} results`);
+                $('#showingText').text(`Showing ${from} to ${to} of ${response.total} audits`);
 
-                // Simple pagination
+                // Build pagination
                 let paginationHtml = '<ul class="pagination pagination-sm mb-0">';
+                
+                // Previous button
                 if (response.current_page > 1) {
                     paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="loadRecentAudits(${response.current_page - 1}); return false;"><i class="fa fa-chevron-left"></i></a></li>`;
                 }
-                for (let i = 1; i <= response.last_page && i <= 3; i++) {
-                    paginationHtml += `<li class="page-item ${response.current_page === i ? 'active' : ''}"><a class="page-link" href="#" onclick="loadRecentAudits(${i}); return false;">${i}</a></li>`;
+
+                // Page numbers
+                let startPage = Math.max(1, response.current_page - 1);
+                let endPage = Math.min(response.last_page, startPage + 2);
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    if (response.current_page === i) {
+                        paginationHtml += `<li class="page-item active"><span class="page-link" style="background-color: #10b981; border-color: #10b981;">${i}</span></li>`;
+                    } else {
+                        paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="loadRecentAudits(${i}); return false;">${i}</a></li>`;
+                    }
                 }
+
+                // Ellipsis and last page
+                if (endPage < response.last_page - 1) {
+                    paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+                if (endPage < response.last_page) {
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="loadRecentAudits(${response.last_page}); return false;">${response.last_page}</a></li>`;
+                }
+
+                // Next button
                 if (response.current_page < response.last_page) {
                     paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="loadRecentAudits(${response.current_page + 1}); return false;"><i class="fa fa-chevron-right"></i></a></li>`;
                 }
+
                 paginationHtml += '</ul>';
                 $('#paginationNav').html(paginationHtml);
             } else {
@@ -375,15 +427,11 @@
         }
 
         // Filter events
-        $('#applyDashboardFilters').on('click', function() {
+        $('#dashboard_search').on('keyup', function() {
             loadRecentAudits(1);
         });
 
-        $('#clearDashboardFilters').on('click', function() {
-            $('#dashboard_date_range').val('');
-            $('#dashboard_department').val('all').selectpicker('refresh');
-            $('#dashboard_auditor').val('all').selectpicker('refresh');
-            $('#dashboard_auditee').val('all').selectpicker('refresh');
+        $('#dashboard_department, #dashboard_status').on('change', function() {
             loadRecentAudits(1);
         });
 
