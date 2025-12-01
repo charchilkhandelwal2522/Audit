@@ -8,19 +8,15 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        // Chart colors (shared)
-        if (typeof window.chartColors === 'undefined') {
-            window.chartColors = {
-                red: '#ef4444',
-                orange: '#f97316',
-                yellow: '#eab308',
-                teal: '#14b8a6',
-                green: '#22c55e',
-                blue: '#3b82f6'
-            };
-        }
+        const chartColors = {
+            red: '#ef4444',
+            orange: '#f97316',
+            yellow: '#eab308',
+            teal: '#14b8a6',
+            green: '#22c55e',
+            blue: '#3b82f6'
+        };
 
-        // Score Distribution Chart
         const scoreDistributionCtx = document.getElementById('scoreDistributionChart').getContext('2d');
         new Chart(scoreDistributionCtx, {
             type: 'bar',
@@ -28,18 +24,18 @@
                 labels: ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'],
                 datasets: [{
                     data: [
-                        {{ $scoreDistribution['0-20'] }},
-                        {{ $scoreDistribution['21-40'] }},
-                        {{ $scoreDistribution['41-60'] }},
-                        {{ $scoreDistribution['61-80'] }},
-                        {{ $scoreDistribution['81-100'] }}
+                        {{ $scoreDistribution['0-20'] ?? 0 }},
+                        {{ $scoreDistribution['21-40'] ?? 0 }},
+                        {{ $scoreDistribution['41-60'] ?? 0 }},
+                        {{ $scoreDistribution['61-80'] ?? 0 }},
+                        {{ $scoreDistribution['81-100'] ?? 0 }}
                     ],
                     backgroundColor: [
-                        window.chartColors.red,
-                        window.chartColors.orange,
-                        window.chartColors.yellow,
-                        window.chartColors.teal,
-                        window.chartColors.green
+                        chartColors.red,
+                        chartColors.orange,
+                        chartColors.yellow,
+                        chartColors.teal,
+                        chartColors.green
                     ],
                     borderRadius: 4,
                     barThickness: 40

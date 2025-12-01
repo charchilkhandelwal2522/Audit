@@ -3,9 +3,11 @@
 namespace Modules\Audit\Http\Controllers;
 
 use App\Http\Controllers\AccountBaseController;
+use Illuminate\Http\Request;
 use Modules\Audit\Entities\Audit;
 use App\Models\Team;
 use App\Models\User;
+use Carbon\Carbon;
 
 class AuditReportController extends AccountBaseController
 {
@@ -81,5 +83,126 @@ class AuditReportController extends AccountBaseController
         $this->auditees = User::allEmployees();
 
         return view('audit::reports.index', $this->data);
+    }
+
+    /**
+     * Get paginated audit reports for AJAX table
+     */
+    public function audits(Request $request)
+    {
+        $perPage = $request->per_page ?? 4;
+
+        $audits = Audit::with(['template', 'department', 'auditor', 'auditee'])
+            ->where('status', Audit::STATUS_COMPLETED);
+
+        // Filter by department
+        if ($request->department_id && $request->department_id != 'all') {
+            $audits->where('department_id', $request->department_id);
+        }
+
+        // Filter by score range
+        if ($request->score_range && $request->score_range != 'all') {
+            switch ($request->score_range) {
+                case 'high':
+                    $audits->where('score', '>=', 85);
+                    break;
+                case 'medium':
+                    $audits->whereBetween('score', [60, 84]);
+                    break;
+                case 'low':
+                    $audits->where('score', '<', 60);
+                    break;
+            }
+        }
+
+        // Filter by search (auditee name)
+        if ($request->search) {
+            $search = $request->search;
+            $audits->where(function ($query) use ($search) {
+                $query->whereHas('auditee', function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('auditor', function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('department', function ($q) use ($search) {
+                    $q->where('team_name', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
+        // Filter by date range
+        if ($request->date_range) {
+            $dates = explode(' - ', $request->date_range);
+            if (count($dates) == 2) {
+                $startDate = Carbon::createFromFormat($this->company->date_format, trim($dates[0]))->startOfDay();
+                $endDate = Carbon::createFromFormat($this->company->date_format, trim($dates[1]))->endOfDay();
+                $audits->whereBetween('completed_at', [$startDate, $endDate]);
+            }
+        }
+
+        return $audits->orderBy('completed_at', 'desc')->paginate($perPage);
+    }
+
+    /**
+     * Export audit reports
+     */
+    public function export(Request $request)
+    {
+        $audits = Audit::with(['template', 'department', 'auditor', 'auditee'])
+            ->where('status', Audit::STATUS_COMPLETED);
+
+        // Apply same filters as audits method
+        if ($request->department_id && $request->department_id != 'all') {
+            $audits->where('department_id', $request->department_id);
+        }
+
+        if ($request->score_range && $request->score_range != 'all') {
+            switch ($request->score_range) {
+                case 'high':
+                    $audits->where('score', '>=', 85);
+                    break;
+                case 'medium':
+                    $audits->whereBetween('score', [60, 84]);
+                    break;
+                case 'low':
+                    $audits->where('score', '<', 60);
+                    break;
+            }
+        }
+
+        if ($request->search) {
+            $search = $request->search;
+            $audits->where(function ($query) use ($search) {
+                $query->whereHas('auditee', function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
+        if ($request->date_range) {
+            $dates = explode(' - ', $request->date_range);
+            if (count($dates) == 2) {
+                $startDate = Carbon::createFromFormat($this->company->date_format, trim($dates[0]))->startOfDay();
+                $endDate = Carbon::createFromFormat($this->company->date_format, trim($dates[1]))->endOfDay();
+                $audits->whereBetween('completed_at', [$startDate, $endDate]);
+            }
+        }
+
+        $audits = $audits->orderBy('completed_at', 'desc')->get();
+
+        // For now, redirect back. You can implement actual export logic here
+        // using Maatwebsite Excel or similar package
+        if ($request->format === 'excel') {
+            // TODO: Implement Excel export
+            return back()->with('success', 'Excel export coming soon');
+        }
+
+        if ($request->format === 'pdf') {
+            // TODO: Implement PDF export
+            return back()->with('success', 'PDF export coming soon');
+        }
+
+        return back();
     }
 }

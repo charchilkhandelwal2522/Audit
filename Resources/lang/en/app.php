@@ -237,5 +237,17 @@ return [
     'clear' => 'Clear',
     'apply' => 'Apply',
     'summaryReports' => 'Summary Reports',
+    
+    // Reports Page
+    'auditReports' => 'Audit Reports',
+    'searchByAuditee' => 'Search by auditee...',
+    'allScores' => 'All Scores',
+    'highScore' => 'High Score',
+    'mediumScore' => 'Medium Score',
+    'lowScore' => 'Low Score',
+    
+    // Dashboard Stats
+    'auditsInProgress' => 'Audits In Progress',
+    'failedAudits' => 'Failed Audits',
 ];
 

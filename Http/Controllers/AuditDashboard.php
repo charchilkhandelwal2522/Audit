@@ -12,43 +12,6 @@ class AuditDashboard extends AccountBaseController
 {
 
     /**
-     * Get recent audits for dashboard table (AJAX).
-     */
-    public function dashboardAudits(Request $request)
-    {
-        $perPage = $request->get('per_page', 5);
-
-        $query = Audit::with(['template', 'department', 'auditor', 'auditee'])
-            ->where('status', Audit::STATUS_COMPLETED);
-
-        // Apply filters
-        if ($request->department_id && $request->department_id != 'all') {
-            $query->where('department_id', $request->department_id);
-        }
-
-        if ($request->auditor_id && $request->auditor_id != 'all') {
-            $query->where('auditor_id', $request->auditor_id);
-        }
-
-        if ($request->auditee_id && $request->auditee_id != 'all') {
-            $query->where('auditee_id', $request->auditee_id);
-        }
-
-        if ($request->date_range) {
-            $dates = explode(' - ', $request->date_range);
-            if (count($dates) == 2) {
-                $startDate = \Carbon\Carbon::createFromFormat(company()->date_format, trim($dates[0]))->startOfDay();
-                $endDate = \Carbon\Carbon::createFromFormat(company()->date_format, trim($dates[1]))->endOfDay();
-                $query->whereBetween('completed_at', [$startDate, $endDate]);
-            }
-        }
-
-        $audits = $query->orderBy('completed_at', 'desc')->paginate($perPage);
-
-        return response()->json($audits);
-    }
-
-    /**
      * Dashboard.
      */
     public function index()
@@ -61,17 +24,20 @@ class AuditDashboard extends AccountBaseController
         // Total audits count
         $this->totalAudits = Audit::count();
 
-        // Average score
-        $this->averageScore = round($completedAudits->avg('score') ?? 0, 0);
+        // Average score (with 1 decimal)
+        $this->averageScore = round($completedAudits->avg('score') ?? 0, 1);
 
-        // Audits passed (>85%)
-        $this->auditsPassed = Audit::where('status', Audit::STATUS_COMPLETED)
-            ->where('score', '>=', 85)
-            ->count();
+        // Audits in progress
+        $this->auditsInProgress = Audit::where('status', Audit::STATUS_IN_PROGRESS)->count();
 
-        // Audits failed (<60%)
+        // Failed audits (<60%)
         $this->auditsFailed = Audit::where('status', Audit::STATUS_COMPLETED)
             ->where('score', '<', 60)
+            ->count();
+
+        // Audits passed (>85%) - kept for other uses
+        $this->auditsPassed = Audit::where('status', Audit::STATUS_COMPLETED)
+            ->where('score', '>=', 85)
             ->count();
 
         // Score distribution for chart
@@ -123,5 +89,46 @@ class AuditDashboard extends AccountBaseController
         $this->auditees = User::allEmployees();
 
         return view('audit::dashboard.dashboard', $this->data);
+    }
+
+    public function show () {
+        
+    }
+
+    /**
+     * Get recent audits for dashboard table (AJAX).
+     */
+    public function dashboardAudits(Request $request)
+    {
+        $perPage = $request->get('per_page', 5);
+
+        $query = Audit::with(['template', 'department', 'auditor', 'auditee'])
+            ->where('status', Audit::STATUS_COMPLETED);
+
+        // Apply filters
+        if ($request->department_id && $request->department_id != 'all') {
+            $query->where('department_id', $request->department_id);
+        }
+
+        if ($request->auditor_id && $request->auditor_id != 'all') {
+            $query->where('auditor_id', $request->auditor_id);
+        }
+
+        if ($request->auditee_id && $request->auditee_id != 'all') {
+            $query->where('auditee_id', $request->auditee_id);
+        }
+
+        if ($request->date_range) {
+            $dates = explode(' - ', $request->date_range);
+            if (count($dates) == 2) {
+                $startDate = \Carbon\Carbon::createFromFormat(company()->date_format, trim($dates[0]))->startOfDay();
+                $endDate = \Carbon\Carbon::createFromFormat(company()->date_format, trim($dates[1]))->endOfDay();
+                $query->whereBetween('completed_at', [$startDate, $endDate]);
+            }
+        }
+
+        $audits = $query->orderBy('completed_at', 'desc')->paginate($perPage);
+
+        return response()->json($audits);
     }
 }

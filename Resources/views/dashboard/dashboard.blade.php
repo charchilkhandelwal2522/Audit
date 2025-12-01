@@ -219,10 +219,10 @@
                 <div class="stat-card">
                     <div class="stat-info">
                         <h5>@lang('audit::app.totalAudits')</h5>
-                        <p class="stat-value">{{ $totalAudits }}</p>
+                        <p class="stat-value">{{ number_format($totalAudits) }}</p>
                     </div>
                     <div class="stat-icon blue">
-                        <i class="fa fa-clipboard-check f-20 text-blue"></i>
+                        <i class="fa fa-clipboard-list f-20 text-blue"></i>
                     </div>
                 </div>
             </div>
@@ -230,52 +230,43 @@
                 <div class="stat-card">
                     <div class="stat-info">
                         <h5>@lang('audit::app.averageScore')</h5>
-                        <p class="stat-value">{{ $averageScore }}%</p>
-                    </div>
-                    <div class="stat-icon yellow">
-                        <i class="fa fa-star-half-alt f-20 text-yellow"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-                <div class="stat-card">
-                    <div class="stat-info">
-                        <h5>@lang('audit::app.auditsPassed') (>85%)</h5>
-                        <p class="stat-value">{{ $auditsPassed }}</p>
+                        <p class="stat-value">{{ number_format($averageScore, 1) }}%</p>
                     </div>
                     <div class="stat-icon green">
-                        <i class="fa fa-thumbs-up f-20 text-green"></i>
+                        <i class="fa fa-star-half-alt f-20 text-dark-green"></i>
                     </div>
                 </div>
             </div>
             <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
                 <div class="stat-card">
                     <div class="stat-info">
-                        <h5>@lang('audit::app.auditsFailed') (<60%)</h5>
+                        <h5>@lang('audit::app.auditsInProgress')</h5>
+                        <p class="stat-value">{{ $auditsInProgress }}</p>
+                    </div>
+                    <div class="stat-icon yellow">
+                        <i class="fa fa-spinner f-20 text-yellow"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h5>@lang('audit::app.failedAudits')</h5>
                         <p class="stat-value">{{ $auditsFailed }}</p>
                     </div>
                     <div class="stat-icon red">
-                        <i class="fa fa-thumbs-down f-20 text-red"></i>
+                        <i class="fa fa-times-circle f-20 text-red"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Charts Row -->
-        <div class="row mb-4">
-            <div class="col-lg-6 mb-3">
-                @include('audit::dashboard.score-distribution-chart')
-            </div>
-            <div class="col-lg-6 mb-3">
-                @include('audit::dashboard.performance-by-department-chart')
-            </div>
-        </div>
+        <!-- Performance Overview Chart -->
+        @include('audit::dashboard.permormance-overview-chart')
 
         <!-- Audit History Section -->
         @include('audit::dashboard.audit-history')
 
-        <!-- Performance Overview Chart -->
-        @include('audit::dashboard.permormance-overview-chart')
     </div>
 @endsection
 

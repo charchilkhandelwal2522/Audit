@@ -23,10 +23,12 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     // Audit Dashboard
     Route::prefix('audit')->group(function () {
         Route::resource('audit-dashboard', AuditDashboard::class);
-        Route::get('audit-dashboard/audits', [AuditDashboard::class, 'audits'])->name('audit-dashboard.audits');
+        Route::get('audit-dashboard/audits', [AuditDashboard::class, 'dashboardAudits'])->name('audit-dashboard.audits');
 
         // Audit Reports
         Route::resource('audit-reports', AuditReportController::class);
+        Route::get('audit-reports-audits', [AuditReportController::class, 'audits'])->name('audit-reports.audits');
+        Route::get('audit-reports-export', [AuditReportController::class, 'export'])->name('audit-reports.export');
 
         // Audit Templates
         Route::resource('audit-templates', AuditTemplateController::class);

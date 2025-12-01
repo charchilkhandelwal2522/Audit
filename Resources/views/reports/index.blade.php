@@ -244,7 +244,7 @@
                         <p class="stat-value">{{ $auditsPassed }}</p>
                     </div>
                     <div class="stat-icon green">
-                        <i class="fa fa-thumbs-up f-20 text-green"></i>
+                        <i class="fa fa-thumbs-up f-20 text-dark-green"></i>
                     </div>
                 </div>
             </div>

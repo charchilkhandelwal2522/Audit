@@ -8,27 +8,18 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        // Chart colors (shared)
-        if (typeof window.chartColors === 'undefined') {
-            window.chartColors = {
-                red: '#ef4444',
-                orange: '#f97316',
-                yellow: '#eab308',
-                teal: '#14b8a6',
-                green: '#22c55e',
-                blue: '#3b82f6'
-            };
-        }
+        const chartColors = {
+            blue: '#3b82f6'
+        };
 
-        // Department Performance Chart
         const deptPerformanceCtx = document.getElementById('departmentPerformanceChart').getContext('2d');
         new Chart(deptPerformanceCtx, {
             type: 'bar',
             data: {
-                labels: {!! json_encode(array_keys($departmentPerformance)) !!},
+                labels: {!! json_encode(array_keys($departmentPerformance ?? [])) !!},
                 datasets: [{
-                    data: {!! json_encode(array_values($departmentPerformance)) !!},
-                    backgroundColor: window.chartColors.blue,
+                    data: {!! json_encode(array_values($departmentPerformance ?? [])) !!},
+                    backgroundColor: chartColors.blue,
                     borderRadius: 4,
                     barThickness: 40
                 }]

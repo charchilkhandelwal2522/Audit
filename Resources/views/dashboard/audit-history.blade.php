@@ -1,4 +1,4 @@
-<div class="audit-history-card mb-4">
+<div class="audit-history-card mb-4 mt-4">
     <div class="card-header">
         <h4>@lang('audit::app.auditHistory')</h4>
         <div class="header-actions">
