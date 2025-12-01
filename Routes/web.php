@@ -1,9 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Audit\Http\Controllers\AuditDashboard;
 use Modules\Audit\Http\Controllers\AuditController;
 use Modules\Audit\Http\Controllers\AuditTemplateController;
 use Modules\Audit\Http\Controllers\AuditSettingController;
+use Modules\Audit\Http\Controllers\AuditReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,8 +20,15 @@ use Modules\Audit\Http\Controllers\AuditSettingController;
 
 Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
 
-    // Audit Templates
+    // Audit Dashboard
     Route::prefix('audit')->group(function () {
+        Route::resource('audit-dashboard', AuditDashboard::class);
+        Route::get('audit-dashboard/audits', [AuditDashboard::class, 'audits'])->name('audit-dashboard.audits');
+
+        // Audit Reports
+        Route::resource('audit-reports', AuditReportController::class);
+
+        // Audit Templates
         Route::resource('audit-templates', AuditTemplateController::class);
         Route::get('audit-templates/department/{departmentId}', [AuditTemplateController::class, 'getByDepartment'])
             ->name('audit-templates.by-department');

@@ -1,173 +1,527 @@
-<div class="row">
-    <div class="col-sm-12">
-        <div class="card bg-white border-0 b-shadow-4">
-            <div class="card-header bg-white border-bottom-grey text-capitalize justify-content-between p-20">
-                <div class="row">
-                    <div class="col-md-8">
-                        <h3 class="heading-h1 mb-0">{{ $audit->template->title }}</h3>
+<style>
+    .audit-result-wrapper {
+        padding: 20px;
+    }
+    .audit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 25px;
+    }
+    .audit-title-section h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 5px;
+    }
+    .audit-title-section .completion-date {
+        font-size: 14px;
+        color: #6c757d;
+    }
+    .audit-actions .btn {
+        margin-left: 10px;
+    }
+    .btn-print {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        color: #333;
+    }
+    .btn-print:hover {
+        background: #f8f9fa;
+    }
+    .btn-download-pdf {
+        background: #28a745;
+        border: none;
+        color: #fff;
+    }
+    .btn-download-pdf:hover {
+        background: #218838;
+        color: #fff;
+    }
+    .audit-summary-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .summary-content {
+        display: flex;
+        gap: 40px;
+    }
+    .score-circle-wrapper {
+        flex-shrink: 0;
+        position: relative;
+        width: 160px;
+        height: 160px;
+    }
+    .score-circle-svg {
+        width: 160px;
+        height: 160px;
+    }
+    .score-segment {
+        fill: none;
+        stroke-width: 10;
+        stroke-linecap: round;
+    }
+    .score-segment.bg {
+        stroke: #d1fae5;
+    }
+    .score-segment.filled.score-high {
+        stroke: #10b981;
+    }
+    .score-segment.filled.score-medium {
+        stroke: #f59e0b;
+    }
+    .score-segment.filled.score-low {
+        stroke: #ef4444;
+    }
+    .score-circle-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+    .score-circle-content .score-value {
+        font-size: 25px;
+        font-weight: 700;
+        color: #10b981;
+        line-height: 1;
+    }
+    .score-circle-content.score-medium .score-value {
+        color: #f59e0b;
+    }
+    .score-circle-content.score-low .score-value {
+        color: #ef4444;
+    }
+    .score-circle-content .score-label {
+        font-size: 16px;
+        color: #10b981;
+        margin-top: 5px;
+        font-weight: 500;
+    }
+    .score-circle-content.score-medium .score-label {
+        color: #f59e0b;
+    }
+    .score-circle-content.score-low .score-label {
+        color: #ef4444;
+    }
+    .stats-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 12px;
+    }
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+    .stat-icon.time {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+    .stat-icon.checkpoints {
+        background: #e8f5e9;
+        color: #388e3c;
+    }
+    .stat-icon.score {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+    .stat-content .stat-label {
+        font-size: 12px;
+        color: #6c757d;
+    }
+    .stat-content .stat-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a1a2e;
+    }
+    .participants-section {
+        border-left: 1px solid #e3e6ef;
+        padding-left: 30px;
+        min-width: 200px;
+    }
+    .participants-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    .participant-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+    .participant-item img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .participant-info .participant-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1a1a2e;
+    }
+    .participant-info .participant-role {
+        font-size: 12px;
+        color: #6c757d;
+    }
+    .checkpoint-results-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 20px;
+    }
+    .checkpoint-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .checkpoint-table thead th {
+        background: #f8f9fa;
+        padding: 12px 15px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6c757d;
+        text-align: left;
+        border-bottom: 1px solid #e3e6ef;
+    }
+    .checkpoint-table tbody td {
+        padding: 15px;
+        font-size: 14px;
+        color: #333;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+    }
+    .checkpoint-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .status-badge.completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    .status-badge.partial {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .status-badge.not-completed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .evidence-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #007bff;
+        font-size: 13px;
+        text-decoration: none;
+    }
+    .evidence-link:hover {
+        text-decoration: underline;
+    }
+    .action-items-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .action-items-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 20px;
+    }
+    .action-items-title i {
+        color: #fd7e14;
+    }
+    .action-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 16px 20px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        border-left: 4px solid;
+    }
+    .action-item:last-child {
+        margin-bottom: 0;
+    }
+    .action-item.partial {
+        background: #fffbeb;
+        border-left-color: #f59e0b;
+    }
+    .action-item.not-completed {
+        background: #fef2f2;
+        border-left-color: #ef4444;
+    }
+    .action-item .action-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 12px;
+    }
+    .action-item.partial .action-icon {
+        background: #f59e0b;
+        color: #fff;
+    }
+    .action-item.not-completed .action-icon {
+        background: #ef4444;
+        color: #fff;
+    }
+    .action-content .action-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 4px;
+    }
+    .action-content .action-description {
+        font-size: 14px;
+        color: #6c757d;
+    }
+    @media (max-width: 991px) {
+        .summary-content {
+            flex-direction: column;
+        }
+        .participants-section {
+            border-left: none;
+            border-top: 1px solid #e3e6ef;
+            padding-left: 0;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+    }
+</style>
+
+<div class="audit-result-wrapper">
+    <!-- Summary Card -->
+    <div class="audit-summary-card">
+    <!-- Header -->
+        <div class="audit-header">
+            <div class="audit-title-section">
+                <h2>{{ $audit->template->title }}</h2>
+                @if($audit->completed_at)
+                    <div class="completion-date">
+                        @lang('audit::app.completedOn') {{ $audit->completed_at->translatedFormat(company()->date_format) }}
                     </div>
-                    <div class="col-md-4 text-right">
+                @elseif($audit->started_at)
+                    <div class="completion-date">
+                        @lang('audit::app.startedOn') {{ $audit->started_at->translatedFormat(company()->date_format) }}
+                    </div>
+                @endif
+            </div>
+            <div class="audit-actions">
+                <button type="button" class="btn btn-print" onclick="window.print()">
+                    <i class="fa fa-print mr-1"></i> @lang('app.print')
+                </button>
+                <a href="{{ route('audits.export-pdf', $audit->id) }}" class="btn btn-download-pdf">
+                    <i class="fa fa-download mr-1"></i> @lang('audit::app.downloadPdf')
+                </a>
+            </div>
+        </div>
+
+        <div class="summary-content">
+            <!-- Score Circle -->
+            <div class="score-circle-wrapper">
+                @php
+                    $score = $audit->score ?? 0;
+                    $scoreClass = $score >= 80 ? 'score-high' : ($score >= 60 ? 'score-medium' : 'score-low');
+                    $scoreLabel = $score >= 80 ? __('audit::app.pass') : ($score >= 60 ? __('audit::app.acceptable') : __('audit::app.fail'));
+                    $totalSegments = 20;
+                    $filledSegments = round(($score / 100) * $totalSegments);
+                    $radius = 65;
+                    $cx = 80;
+                    $cy = 80;
+                @endphp
+                <svg class="score-circle-svg" viewBox="0 0 160 160">
+                    @for($i = 0; $i < $totalSegments; $i++)
                         @php
-                            $statusClass = [
-                                'in_progress' => 'badge-warning',
-                                'completed' => 'badge-success',
-                                'cancelled' => 'badge-danger',
-                            ][$audit->status] ?? 'badge-secondary';
+                            $angle = ($i * 360 / $totalSegments) - 90;
+                            $angleRad = deg2rad($angle);
+                            $nextAngle = (($i + 1) * 360 / $totalSegments) - 90 - 5;
+                            $nextAngleRad = deg2rad($nextAngle);
+
+                            $x1 = $cx + $radius * cos($angleRad);
+                            $y1 = $cy + $radius * sin($angleRad);
+                            $x2 = $cx + $radius * cos($nextAngleRad);
+                            $y2 = $cy + $radius * sin($nextAngleRad);
+
+                            $isFilled = $i < $filledSegments;
                         @endphp
-                        <span class="badge {{ $statusClass }} f-14">{{ ucwords(str_replace('_', ' ', $audit->status)) }}</span>
-                        @if($audit->status == 'completed')
-                            <span class="badge {{ $audit->score >= 80 ? 'badge-success' : ($audit->score >= 60 ? 'badge-warning' : 'badge-danger') }} f-14 ml-2">
-                                {{ $audit->score }}%
-                            </span>
-                        @endif
+                        <path class="score-segment {{ $isFilled ? 'filled ' . $scoreClass : 'bg' }}"
+                            d="M {{ $x1 }} {{ $y1 }} A {{ $radius }} {{ $radius }} 0 0 1 {{ $x2 }} {{ $y2 }}"
+                        />
+                    @endfor
+                </svg>
+                <div class="score-circle-content {{ $scoreClass }}">
+                    <div class="score-value">{{ $score }}%</div>
+                    <div class="score-label">{{ $scoreLabel }}</div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-section">
+                <div class="stat-item">
+                    <div class="stat-icon time">
+                        <i class="fa fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">@lang('audit::app.totalTimeTaken')</div>
+                        <div class="stat-value">{{ $audit->duration_formatted ?? '--' }}</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon checkpoints">
+                        <i class="fa fa-check-double"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">@lang('audit::app.checkpoints')</div>
+                        <div class="stat-value">{{ $audit->completed_checkpoints ?? 0 }} / {{ $audit->total_checkpoints }} @lang('audit::app.completed')</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon score">
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">@lang('audit::app.finalScore')</div>
+                        <div class="stat-value">{{ $audit->score ?? 0 }} / 100</div>
                     </div>
                 </div>
             </div>
-            <div class="card-body">
-                <!-- Audit Info -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <x-cards.data-row :label="__('audit::app.department')" :value="$audit->department ? $audit->department->team_name : '--'" />
-                    </div>
-                    <div class="col-md-6">
-                        <x-cards.data-row :label="__('audit::app.location')" :value="$audit->location ?: '--'" />
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card-text f-14 text-dark-grey mb-3">
-                            <span class="font-weight-bold">@lang('audit::app.auditor'):</span>
-                            @if($audit->auditor)
-                                <div class="d-inline-flex align-items-center ml-2">
-                                    <img src="{{ $audit->auditor->image_url }}" class="rounded-circle" width="30" height="30">
-                                    <span class="ml-2">{{ $audit->auditor->name }}</span>
-                                </div>
-                            @else
-                                --
-                            @endif
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card-text f-14 text-dark-grey mb-3">
-                            <span class="font-weight-bold">@lang('audit::app.auditee'):</span>
-                            @if($audit->auditee)
-                                <div class="d-inline-flex align-items-center ml-2">
-                                    <img src="{{ $audit->auditee->image_url }}" class="rounded-circle" width="30" height="30">
-                                    <span class="ml-2">{{ $audit->auditee->name }}</span>
-                                </div>
-                            @else
-                                --
-                            @endif
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <x-cards.data-row :label="__('audit::app.startedAt')" :value="$audit->started_at ? $audit->started_at->translatedFormat(company()->date_format . ' ' . company()->time_format) : '--'" />
-                    </div>
-                    <div class="col-md-6">
-                        <x-cards.data-row :label="__('audit::app.completedAt')" :value="$audit->completed_at ? $audit->completed_at->translatedFormat(company()->date_format . ' ' . company()->time_format) : '--'" />
-                    </div>
-                    <div class="col-md-6">
-                        <x-cards.data-row :label="__('audit::app.duration')" :value="$audit->duration_formatted" />
-                    </div>
-                </div>
 
-                <!-- Score Summary (if completed) -->
-                @if($audit->status == 'completed')
-                <div class="row mb-4">
-                    <div class="col-md-12">
-                        <div class="card border">
-                            <div class="card-body">
-                                <div class="row text-center">
-                                    <div class="col-md-3">
-                                        <h2 class="{{ $audit->score_color }}">{{ $audit->score }}%</h2>
-                                        <p class="text-muted mb-0">@lang('audit::app.overallScore')</p>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h2 class="text-success">{{ $audit->completed_checkpoints }}</h2>
-                                        <p class="text-muted mb-0">@lang('audit::app.completed')</p>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h2 class="text-warning">{{ $audit->partially_completed_checkpoints }}</h2>
-                                        <p class="text-muted mb-0">@lang('audit::app.partiallyCompleted')</p>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h2 class="text-danger">{{ $audit->total_checkpoints - $audit->completed_checkpoints - $audit->partially_completed_checkpoints }}</h2>
-                                        <p class="text-muted mb-0">@lang('audit::app.notCompleted')</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Participants -->
+            <div class="participants-section">
+                <div class="participants-title">@lang('audit::app.participants')</div>
+                @if($audit->auditor)
+                <div class="participant-item">
+                    <img src="{{ $audit->auditor->image_url }}" alt="{{ $audit->auditor->name }}">
+                    <div class="participant-info">
+                        <div class="participant-name">{{ $audit->auditor->name }}</div>
+                        <div class="participant-role">@lang('audit::app.auditor')</div>
                     </div>
                 </div>
                 @endif
-
-                <!-- Checkpoint Responses -->
-                <div class="row">
-                    <div class="col-md-12">
-                        <h5 class="f-18 font-weight-bold mb-3">
-                            <i class="fa fa-list-check mr-2"></i>@lang('audit::app.checkpointResponses')
-                        </h5>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th width="50">#</th>
-                                        <th>@lang('audit::app.checkpoint')</th>
-                                        <th width="150">@lang('app.status')</th>
-                                        <th>@lang('audit::app.notes')</th>
-                                        <th width="150">@lang('audit::app.files')</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($audit->responses as $index => $response)
-                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>
-                                            <strong>{{ $response->checkpoint->title }}</strong>
-                                            @if($response->checkpoint->description)
-                                                <br><small class="text-muted">{{ $response->checkpoint->description }}</small>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @php
-                                                $statusInfo = \Modules\Audit\Entities\AuditCheckpointResponse::STATUSES[$response->status];
-                                            @endphp
-                                            <span class="badge badge-{{ $statusInfo['color'] }}">
-                                                <i class="fa fa-{{ $statusInfo['icon'] }} mr-1"></i>
-                                                {{ $statusInfo['label'] }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $response->notes ?: '--' }}</td>
-                                        <td>
-                                            @if($response->files->count() > 0)
-                                                @foreach($response->files as $file)
-                                                    <a href="{{ $file->file_url }}" target="_blank" class="btn btn-sm btn-outline-secondary mb-1" title="{{ $file->filename }}">
-                                                        <i class="fa {{ $file->icon }}"></i>
-                                                    </a>
-                                                @endforeach
-                                            @else
-                                                --
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Summary -->
-                @if($audit->summary)
-                <div class="row mt-4">
-                    <div class="col-md-12">
-                        <h5 class="f-18 font-weight-bold mb-3">@lang('audit::app.summary')</h5>
-                        <p>{{ $audit->summary }}</p>
+                @if($audit->auditee)
+                <div class="participant-item">
+                    <img src="{{ $audit->auditee->image_url }}" alt="{{ $audit->auditee->name }}">
+                    <div class="participant-info">
+                        <div class="participant-name">{{ $audit->auditee->name }}</div>
+                        <div class="participant-role">@lang('audit::app.auditee') @if($audit->department)({{ $audit->department->team_name }})@endif</div>
                     </div>
                 </div>
                 @endif
             </div>
         </div>
     </div>
-</div>
 
+    <!-- Detailed Checkpoint Results -->
+    <div class="checkpoint-results-card">
+        <h3 class="section-title">@lang('audit::app.detailedCheckpointResults')</h3>
+        <table class="checkpoint-table">
+            <thead>
+                <tr>
+                    <th width="50">#</th>
+                    <th>@lang('audit::app.checkpointDescription')</th>
+                    <th width="200">@lang('app.status')</th>
+                    <th width="120">@lang('audit::app.evidence')</th>
+                    <th>@lang('audit::app.notes')</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($audit->responses as $index => $response)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $response->checkpoint->title }}</td>
+                    <td>
+                        @if($response->status == 'completed')
+                            <span class="status-badge completed">@lang('audit::app.completed')</span>
+                        @elseif($response->status == 'partially_completed')
+                            <span class="status-badge partial">@lang('audit::app.partial') @lang('app.completed')</span>
+                        @elseif($response->status == 'not_completed')
+                            <span class="status-badge not-completed">@lang('audit::app.notCompleted')</span>
+                        @else
+                            <span class="text-muted">--</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if($response->files->count() > 0)
+                            @foreach($response->files as $file)
+                                <a href="{{ $file->file_url }}" target="_blank" class="evidence-link">
+                                    <i class="fa {{ $file->isImage() ? 'fa-image' : 'fa-file' }}"></i>
+                                    @lang('audit::app.viewFile')
+                                </a>
+                                @if(!$loop->last)<br>@endif
+                            @endforeach
+                        @else
+                            <span class="text-muted">N/A</span>
+                        @endif
+                    </td>
+                    <td>{{ $response->notes ?: '-' }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Action Items Required -->
+    @php
+        $actionItems = $audit->responses->filter(function($response) {
+            return in_array($response->status, ['partially_completed', 'not_completed']) && $response->notes;
+        });
+    @endphp
+    @if($actionItems->count() > 0)
+    <div class="action-items-card">
+        <h3 class="action-items-title">
+            <i class="fa fa-exclamation-triangle"></i>
+            @lang('audit::app.actionItemsRequired')
+        </h3>
+        @foreach($actionItems as $item)
+        <div class="action-item {{ $item->status == 'partially_completed' ? 'partial' : 'not-completed' }}">
+            <div class="action-icon">
+                <i class="fa {{ $item->status == 'partially_completed' ? 'fa-exclamation' : 'fa-times' }}"></i>
+            </div>
+            <div class="action-content">
+                <div class="action-title">{{ $item->checkpoint->title }}</div>
+                <div class="action-description">{{ $item->notes }}</div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
+</div>

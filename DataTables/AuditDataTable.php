@@ -104,13 +104,13 @@ class AuditDataTable extends BaseDataTable
                 return $row->started_at ? $row->started_at->translatedFormat($this->company->date_format) : '--';
             })
             ->editColumn('started_time', function ($row) {
-                return $row->started_at ? $row->started_at->translatedFormat($this->company->time_format) : '--';
+                return $row->started_at ? $row->started_at->timezone($this->company->timezone)->translatedFormat($this->company->time_format) : '--';
             })
             ->editColumn('ended_at', function ($row) {
                 return $row->completed_at ? $row->completed_at->translatedFormat($this->company->date_format) : '--';
             })
             ->editColumn('completed_time', function ($row) {
-                return $row->completed_at ? $row->completed_at->translatedFormat($this->company->time_format) : '--';
+                return $row->completed_at ? $row->completed_at->timezone($this->company->timezone)->translatedFormat($this->company->time_format) : '--';
             })
             ->addIndexColumn()
             ->setRowId(fn($row) => 'row-' . $row->id)

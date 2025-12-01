@@ -147,6 +147,22 @@ return [
 
     // Export
     'exportPdf' => 'Export PDF',
+    'downloadPdf' => 'Download PDF',
+
+    // Result Page
+    'completedOn' => 'Completed on',
+    'startedOn' => 'Started on',
+    'totalTimeTaken' => 'Total Time Taken',
+    'finalScore' => 'Final Score',
+    'participants' => 'Participants',
+    'detailedCheckpointResults' => 'Detailed Checkpoint Results',
+    'checkpointDescription' => 'Checkpoint Description',
+    'evidence' => 'Evidence',
+    'viewFile' => 'View Photo',
+    'actionItemsRequired' => 'Action Items Required',
+    'pass' => 'Pass',
+    'acceptable' => 'Acceptable',
+    'fail' => 'Fail',
 
     // Settings
     'scoringSettings' => 'Scoring Settings',
@@ -198,5 +214,28 @@ return [
     'completedTime' => 'Completed Time',
     'endedAt' => 'Ended At',
     'endedTime' => 'Ended Time',
+
+    // Dashboard
+    'dashboard' => 'Dashboard',
+    'totalAudits' => 'Total Audits',
+    'averageScore' => 'Average Score',
+    'auditsPassed' => 'Audits Passed',
+    'auditsFailed' => 'Audits Failed',
+    'scoreDistribution' => 'Score Distribution',
+    'performanceByDepartment' => 'Performance by Department',
+    'auditHistory' => 'Audit History',
+    'performanceOverview' => 'Performance Overview',
+    'viewAllAudits' => 'View All Audits',
+    'startNewAudit' => 'Start New Audit',
+    'dateRange' => 'Date Range',
+    'selectDateRange' => 'Select Date Range',
+    'allDepartments' => 'All Departments',
+    'allAuditors' => 'All Auditors',
+    'allAuditees' => 'All Auditees',
+    'auditTitle' => 'Audit Title',
+    'filter' => 'Filter',
+    'clear' => 'Clear',
+    'apply' => 'Apply',
+    'summaryReports' => 'Summary Reports',
 ];
 

@@ -90,15 +90,9 @@
                         @lang('audit::app.createAudit')
                     </x-forms.link-primary>
                 @endif
-            </div>
-
-            <div class="btn-group mt-2 mt-lg-0 mt-md-0 ml-0 ml-lg-3 ml-md-3" role="group">
-                <a href="{{ route('audits.index') }}" class="btn btn-secondary f-14 btn-active" data-toggle="tooltip" data-original-title="@lang('audit::app.audits')">
-                    <i class="fa fa-clipboard-check"></i>
-                </a>
-                <a href="{{ route('audit-templates.index') }}" class="btn btn-secondary f-14" data-toggle="tooltip" data-original-title="@lang('audit::app.auditTemplates')">
-                    <i class="fa fa-file-alt"></i>
-                </a>
+                {{-- <x-forms.link-secondary :link="route('audits.my-audits')" class="mr-3 float-left">
+                    @lang('audit::app.myAudits')
+                </x-forms.link-secondary> --}}
             </div>
         </div>
         <!-- End Add Audit Button -->

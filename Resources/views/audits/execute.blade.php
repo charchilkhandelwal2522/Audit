@@ -34,6 +34,8 @@
         font-weight: 600;
         color: #1a1a2e;
         margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e3e6ef;
     }
     .status-section-title {
         font-size: 14px;
@@ -237,6 +239,7 @@
         background: #dc3545;
         border: none;
         color: #fff;
+        margin-left: auto;
     }
     .nav-btn.next:hover {
         background: #c82333;
@@ -286,7 +289,7 @@
         font-size: 32px;
         font-weight: 700;
         font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-        color: #1a1a2e;
+        color: #007bff;
     }
     .progress-section {
         margin-bottom: 20px;
@@ -306,6 +309,9 @@
     .progress-count {
         font-size: 13px;
         font-weight: 600;
+        color: #dc3545;
+    }
+    .progress-count.completed {
         color: #28a745;
     }
     .progress-bar-wrapper {
@@ -316,9 +322,12 @@
     }
     .progress-bar-fill {
         height: 100%;
-        background: #28a745;
+        background: #dc3545;
         border-radius: 3px;
-        transition: width 0.3s ease;
+        transition: width 0.3s ease, background 0.3s ease;
+    }
+    .progress-bar-fill.completed {
+        background: #28a745;
     }
     .checkpoints-list-title {
         font-size: 13px;
@@ -388,8 +397,9 @@
         color: #fff;
     }
     .checkpoint-item .status-icon.pending {
-        background: #e9ecef;
-        color: #6c757d;
+        background: #fff;
+        color: #adb5bd;
+        border: 2px solid #dee2e6;
     }
     .checkpoint-item .status-icon.current {
         background: #007bff;
@@ -459,11 +469,8 @@
                     @foreach($audit->responses as $index => $response)
                     <div class="checkpoint-step" data-index="{{ $index }}" data-response-id="{{ $response->id }}" style="{{ $index > 0 ? 'display: none;' : '' }}">
                         <div class="step-indicator">@lang('audit::app.step') {{ $index + 1 }} @lang('audit::app.of') {{ $audit->responses->count() }}</div>
-                        <h2 class="checkpoint-title border-bottom-grey pb-20">
+                        <h2 class="checkpoint-title">
                             {{ $response->checkpoint->title }}
-                            {{-- @if($response->checkpoint->is_mandatory)
-                                <span class="badge badge-danger ml-2" style="font-size: 12px;">@lang('audit::app.mandatory')</span>
-                            @endif --}}
                         </h2>
 
                         <!-- Completion Status -->
@@ -479,7 +486,7 @@
                                 <i class="fa fa-times-circle"></i> @lang('audit::app.notCompleted')
                             </button>
                         </div>
-                        <input type="hidden" name="status_{{ $response->id }}" id="status_{{ $response->id }}" value="{{ $response->status ?? 'not_completed' }}">
+                        <input type="hidden" name="status_{{ $response->id }}" id="status_{{ $response->id }}" value="{{ $response->status ?? '' }}">
 
                         @if($response->checkpoint->description)
                         <p class="text-muted mb-4">{{ $response->checkpoint->description }}</p>
@@ -498,8 +505,8 @@
                                 <div class="dropzone-icon"><i class="fa fa-cloud-upload-alt"></i></div>
                                 <div class="dropzone-text">@lang('audit::app.dragDropText')</div>
                                 <div class="dropzone-hint">@lang('audit::app.maxFileSize')</div>
-                                <input type="file" name="files_{{ $response->id }}[]" id="file-input-{{ $response->id }}" multiple accept="{{ $response->checkpoint->requires_photo ? 'image/*' : '*' }}" style="display: none;">
                             </div>
+                            <input type="file" name="files_{{ $response->id }}[]" id="file-input-{{ $response->id }}" multiple @if($response->checkpoint->requires_photo) accept="image/*" @endif style="display: none;">
                             <div class="uploaded-files" id="uploaded-files-{{ $response->id }}">
                                 @foreach($response->files as $file)
                                 <div class="uploaded-file" id="file-{{ $file->id }}">
@@ -535,7 +542,7 @@
 
                     <!-- Navigation Buttons -->
                     <div class="navigation-buttons">
-                        <button type="button" class="nav-btn prev" id="prev-step" disabled>
+                        <button type="button" class="nav-btn prev" id="prev-step" style="display: none;">
                             <i class="fa fa-arrow-left"></i> @lang('audit::app.previousStep')
                         </button>
                         <button type="button" class="nav-btn next" id="next-step">
@@ -572,10 +579,17 @@
                 <div class="progress-section">
                     <div class="progress-header">
                         <span class="progress-label">@lang('audit::app.progress')</span>
-                        <span class="progress-count"><span id="progress-count">{{ $audit->responses->whereNotNull('responded_at')->count() }}</span> / {{ $audit->responses->count() }} @lang('audit::app.completed')</span>
+                        @php
+                            $completedCount = $audit->responses->whereNotNull('responded_at')->count();
+                            $totalCount = $audit->responses->count();
+                            $isCompleted = $completedCount == $totalCount && $totalCount > 0;
+                        @endphp
+                        <span class="progress-count {{ $isCompleted ? 'completed' : '' }}" id="progress-count-wrapper">
+                            <span id="progress-count">{{ $completedCount }}</span> / {{ $totalCount }} @lang('audit::app.completed')
+                        </span>
                     </div>
                     <div class="progress-bar-wrapper">
-                        <div class="progress-bar-fill" id="progress-bar" style="width: {{ $audit->responses->count() > 0 ? ($audit->responses->whereNotNull('responded_at')->count() / $audit->responses->count() * 100) : 0 }}%"></div>
+                        <div class="progress-bar-fill {{ $isCompleted ? 'completed' : '' }}" id="progress-bar" style="width: {{ $totalCount > 0 ? ($completedCount / $totalCount * 100) : 0 }}%"></div>
                     </div>
                 </div>
 
@@ -606,8 +620,6 @@
                                 <i class="fa fa-exclamation"></i>
                             @elseif($response->responded_at && $response->status == 'not_completed')
                                 <i class="fa fa-times"></i>
-                            @else
-                                {{ $index + 1 }}
                             @endif
                         </span>
                         <span class="checkpoint-text" title="{{ $response->checkpoint->title }}">{{ $index + 1 }}. {{ $response->checkpoint->title }}</span>
@@ -673,15 +685,25 @@ $(document).ready(function() {
     });
 
     // Dropzone click
-    $(document).on('click', '.dropzone-area', function() {
-        const responseId = $(this).data('response-id');
-        $('#file-input-' + responseId).click();
+    $(document).on('click', '.dropzone-area', function(e) {
+        e.preventDefault();
+        const $dropzone = $(this);
+        // Prevent clicking while uploading
+        if ($dropzone.hasClass('uploading')) {
+            return;
+        }
+        const responseId = $dropzone.data('response-id');
+        $('#file-input-' + responseId).trigger('click');
     });
 
     // File input change
     $(document).on('change', 'input[type="file"]', function() {
         const responseId = $(this).attr('id').replace('file-input-', '');
-        saveCheckpoint(responseId);
+        console.log('File input changed for response:', responseId);
+        console.log('Files selected:', this.files.length);
+        if (this.files.length > 0) {
+            saveCheckpoint(responseId);
+        }
     });
 
     // Drag and drop
@@ -697,12 +719,21 @@ $(document).ready(function() {
 
     $(document).on('drop', '.dropzone-area', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         $(this).removeClass('dragover');
         const responseId = $(this).data('response-id');
         const files = e.originalEvent.dataTransfer.files;
-        const input = $('#file-input-' + responseId)[0];
-        input.files = files;
-        saveCheckpoint(responseId);
+        console.log('Files dropped:', files.length);
+        if (files.length > 0) {
+            const input = $('#file-input-' + responseId)[0];
+            // Create a DataTransfer object to set files
+            const dataTransfer = new DataTransfer();
+            for (let i = 0; i < files.length; i++) {
+                dataTransfer.items.add(files[i]);
+            }
+            input.files = dataTransfer.files;
+            saveCheckpoint(responseId);
+        }
     });
 
     // Delete file
@@ -730,6 +761,8 @@ $(document).ready(function() {
 
     // Save checkpoint
     function saveCheckpoint(responseId) {
+        console.log('saveCheckpoint called for response:', responseId);
+
         const formData = new FormData();
         formData.append('_token', '{{ csrf_token() }}');
         formData.append('status', $('#status_' + responseId).val());
@@ -739,8 +772,13 @@ $(document).ready(function() {
         const $dropzone = $('#dropzone-' + responseId);
         const hasFiles = fileInput && fileInput.files.length > 0;
 
+        console.log('File input found:', !!fileInput);
+        console.log('Has files:', hasFiles);
+
         if (hasFiles) {
+            console.log('Appending', fileInput.files.length, 'files to formData');
             for (let i = 0; i < fileInput.files.length; i++) {
+                console.log('File', i + 1, ':', fileInput.files[i].name, fileInput.files[i].size, 'bytes');
                 formData.append('files[]', fileInput.files[i]);
             }
             // Show uploading state
@@ -749,6 +787,7 @@ $(document).ready(function() {
         }
 
         const url = "{{ route('audits.update-checkpoint', [$audit->id, ':response']) }}".replace(':response', responseId);
+        console.log('Upload URL:', url);
 
         $.ajax({
             url: url,
@@ -757,6 +796,7 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
+                console.log('Upload response:', response);
                 // Reset dropzone state
                 $dropzone.removeClass('uploading');
                 $dropzone.find('.dropzone-text').text('@lang("audit::app.dragDropText")');
@@ -828,7 +868,7 @@ $(document).ready(function() {
         } else if (status === 'not_completed') {
             $icon.addClass('not-completed').html('<i class="fa fa-times"></i>');
         } else {
-            $icon.addClass('pending');
+            $icon.addClass('pending').html('');
         }
 
         // Update item background
@@ -850,6 +890,16 @@ $(document).ready(function() {
         $('#progress-count').text(responded);
         const percentage = Math.round((responded / total) * 100);
         $('#progress-bar').css('width', percentage + '%');
+
+        // Update color based on completion
+        const isCompleted = responded === total && total > 0;
+        if (isCompleted) {
+            $('#progress-count-wrapper').addClass('completed');
+            $('#progress-bar').addClass('completed');
+        } else {
+            $('#progress-count-wrapper').removeClass('completed');
+            $('#progress-bar').removeClass('completed');
+        }
     }
 
     // Navigation
@@ -876,11 +926,16 @@ $(document).ready(function() {
         $currentIcon.removeClass('completed partial not-completed pending').addClass('current').html('<i class="fa fa-arrow-right"></i>');
 
         // Update button states
-        $('#prev-step').prop('disabled', index === 0);
-        if (index === totalSteps - 1) {
-            $('#next-step').html('@lang("audit::app.finish") <i class="fa fa-check"></i>');
+        if (index === 0) {
+            $('#prev-step').hide();
         } else {
-            $('#next-step').html('@lang("audit::app.nextStep") <i class="fa fa-arrow-right"></i>');
+            $('#prev-step').show();
+        }
+
+        if (index === totalSteps - 1) {
+            $('#next-step').hide();
+        } else {
+            $('#next-step').show().html('@lang("audit::app.nextStep") <i class="fa fa-arrow-right"></i>');
         }
 
         currentIndex = index;

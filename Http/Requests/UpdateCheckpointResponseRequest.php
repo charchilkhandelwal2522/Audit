@@ -20,7 +20,7 @@ class UpdateCheckpointResponseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'required|in:not_completed,partially_completed,completed',
+            'status' => 'nullable|in:not_completed,partially_completed,completed',
             'notes' => 'nullable|string',
             'files' => 'nullable|array',
             'files.*' => 'file|max:10240', // 10MB max per file

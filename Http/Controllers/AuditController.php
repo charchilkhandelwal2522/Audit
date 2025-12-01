@@ -92,7 +92,7 @@ class AuditController extends AccountBaseController
             AuditCheckpointResponse::create([
                 'audit_id' => $audit->id,
                 'checkpoint_id' => $checkpoint->id,
-                'status' => AuditCheckpointResponse::STATUS_NOT_COMPLETED,
+                'status' => null, // No status pre-selected, user must choose
                 'order' => $checkpoint->order,
             ]);
         }
@@ -173,9 +173,12 @@ class AuditController extends AccountBaseController
             ->where('id', $responseId)
             ->firstOrFail();
 
-        $response->status = $request->status;
+        // Only update status if provided
+        if ($request->filled('status')) {
+            $response->status = $request->status;
+            $response->responded_at = now();
+        }
         $response->notes = $request->notes;
-        $response->responded_at = now();
         $response->save();
 
         // Handle file uploads
@@ -215,12 +218,12 @@ class AuditController extends AccountBaseController
         // Update audit progress
         $audit->updateScore();
 
-        $totalResponded = $audit->responses()->whereNotNull('responded_at')->count();
+        $completedCount = $audit->responses()->whereIn('status', ['completed', 'partially_completed'])->count();
         $totalResponses = $audit->responses()->count();
 
         return Reply::successWithData(__('audit::app.checkpointUpdated'), [
             'progress' => $audit->progress_percentage,
-            'responded' => $totalResponded,
+            'responded' => $completedCount,
             'total' => $totalResponses,
             'files' => $uploadedFiles,
         ]);
@@ -414,5 +417,6 @@ class AuditController extends AccountBaseController
 
         return $dataTable->render('audit::audits.my-audits', $this->data);
     }
+
 }
 
