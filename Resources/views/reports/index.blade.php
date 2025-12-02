@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @push('styles')
+    @include('sections.daterange_css')
     <script src="{{ asset('vendor/jquery/Chart.min.js') }}"></script>
     <style>
         .stat-card {
@@ -208,6 +209,12 @@
         .action-btn:hover {
             background: #e2e8f0;
         }
+        #datatableRange, #datatableRange2 {
+            width: 290px;
+        }
+        .f-w-500 {
+            font-weight: 200 !important;
+        }
     </style>
 @endpush
 
@@ -279,73 +286,86 @@
 
 @push('scripts')
 <script src="{{ asset('vendor/jquery/daterangepicker.min.js') }}"></script>
-<script>
-    $(document).ready(function() {
+<script type="text/javascript">
 
-        // Filter events
-        $('#report_search').on('keyup', function() {
+    $(function() {
+        // Define showTable function for date range picker callback
+        window.showTable = function() {
             loadAuditReports(1);
+        };
+
+        var start = moment().subtract(89, 'days');
+        var end = moment();
+
+        // Callback function to format date range in input
+        function cb(start, end) {
+            $('#datatableRange').val(start.format('{{ company()->moment_date_format }}') + ' - ' + end.format('{{ company()->moment_date_format }}'));
+        }
+
+        $('#datatableRange').daterangepicker({
+            autoUpdateInput: false,
+            locale: daterangeLocale,
+            linkedCalendars: false,
+            startDate: start,
+            endDate: end,
+            showDropdowns: true,
+            ranges: daterangeConfig
+        }, cb);
+
+        $('#datatableRange').on('apply.daterangepicker', function(ev, picker) {
+            showTable();
         });
 
-        $('#report_department, #report_score').on('change', function() {
-            loadAuditReports(1);
+        @if (request('start') && request('end'))
+            $('#datatableRange').data('daterangepicker').setStartDate("{{ request('start') }}");
+            $('#datatableRange').data('daterangepicker').setEndDate("{{ request('end') }}");
+            $('#datatableRange').val("{{ request('start') }} - {{ request('end') }}");
+        @endif
+    });
+
+    // Export buttons
+    $('#exportExcel').on('click', function() {
+        var dateRangePicker = $('#report_date_range').data('daterangepicker');
+        var dateRangeVal = $('#report_date_range').val();
+        var startDate = '';
+        var endDate = '';
+
+        if (dateRangeVal !== '' && dateRangePicker) {
+            startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
+            endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
+        }
+
+        let params = new URLSearchParams({
+            department_id: $('#report_department').val() || 'all',
+            score_range: $('#report_score').val() || 'all',
+            search: $('#report_search').val() || '',
+            start_date: startDate,
+            end_date: endDate,
+            format: 'excel'
         });
+        window.location.href = "{{ route('audit-reports.export') }}?" + params.toString();
+    });
 
-        $('#clearReportFilters').on('click', function() {
-            $('#report_search').val('');
-            $('#report_date_range').val('');
-            $('#report_department').val('all').selectpicker('refresh');
-            $('#report_score').val('all').selectpicker('refresh');
-            loadAuditReports(1);
+    $('#exportPdf').on('click', function() {
+        var dateRangePicker = $('#report_date_range').data('daterangepicker');
+        var dateRangeVal = $('#report_date_range').val();
+        var startDate = '';
+        var endDate = '';
+
+        if (dateRangeVal !== '' && dateRangePicker) {
+            startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
+            endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
+        }
+
+        let params = new URLSearchParams({
+            department_id: $('#report_department').val() || 'all',
+            score_range: $('#report_score').val() || 'all',
+            search: $('#report_search').val() || '',
+            start_date: startDate,
+            end_date: endDate,
+            format: 'pdf'
         });
-
-        // Export buttons
-        $('#exportExcel').on('click', function() {
-            var dateRangePicker = $('#report_date_range').data('daterangepicker');
-            var dateRangeVal = $('#report_date_range').val();
-            var startDate = '';
-            var endDate = '';
-
-            if (dateRangeVal !== '') {
-                startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
-                endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
-            }
-
-            let params = new URLSearchParams({
-                department_id: $('#report_department').val() || 'all',
-                score_range: $('#report_score').val() || 'all',
-                search: $('#report_search').val() || '',
-                start_date: startDate,
-                end_date: endDate,
-                format: 'excel'
-            });
-            window.location.href = "{{ route('audit-reports.export') }}?" + params.toString();
-        });
-
-        $('#exportPdf').on('click', function() {
-            var dateRangePicker = $('#report_date_range').data('daterangepicker');
-            var dateRangeVal = $('#report_date_range').val();
-            var startDate = '';
-            var endDate = '';
-
-            if (dateRangeVal !== '') {
-                startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
-                endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
-            }
-
-            let params = new URLSearchParams({
-                department_id: $('#report_department').val() || 'all',
-                score_range: $('#report_score').val() || 'all',
-                search: $('#report_search').val() || '',
-                start_date: startDate,
-                end_date: endDate,
-                format: 'pdf'
-            });
-            window.location.href = "{{ route('audit-reports.export') }}?" + params.toString();
-        });
-
-        // Initial load
-        loadAuditReports(1);
+        window.location.href = "{{ route('audit-reports.export') }}?" + params.toString();
     });
 
     let reportCurrentPage = 1;
@@ -358,7 +378,7 @@
         var startDate = null;
         var endDate = null;
 
-        if (dateRangeVal !== '') {
+        if (dateRangeVal !== '' && dateRangePicker) {
             startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
             endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
         }
@@ -407,12 +427,21 @@
                         <td><span class="${scoreColor} font-weight-bold">${scoreValue}%</span></td>
                         <td>${audit.completed_at ? new Date(audit.completed_at).toLocaleDateString() : '-'}</td>
                         <td>
-                            <a href="{{ url('account/audits') }}/${audit.id}" class="action-btn openRightModal" title="@lang('app.view')">
-                                <i class="fa fa-eye"></i>
-                            </a>
-                            <a href="{{ url('account/audits') }}/${audit.id}/export-pdf" class="action-btn" title="@lang('audit::app.exportPdf')">
-                                <i class="fa fa-download"></i>
-                            </a>
+                            <div class="task_view">
+                                <div class="dropdown">
+                                    <a class="task_view_more d-flex align-items-center justify-content-center dropdown-toggle" type="link" id="dropdownMenuLink-${audit.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="icon-options-vertical icons"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink-${audit.id}" tabindex="0">
+                                        <a href="{{ url('account/audits') }}/${audit.id}" class="dropdown-item openRightModal">
+                                            <i class="fa fa-eye mr-2"></i>@lang('app.view')
+                                        </a>
+                                        ${audit.status === 'completed' ? `<a href="{{ url('account/audits') }}/${audit.id}/export-pdf" class="dropdown-item">
+                                            <i class="fa fa-download mr-2"></i>@lang('audit::app.exportPdf')
+                                        </a>` : ''}
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -471,6 +500,20 @@
             $('#reportPaginationNav').html('');
         }
     }
+
+    // Filter events
+    $('#report_search').on('keyup', function() {
+        loadAuditReports(1);
+    });
+
+    $('#report_department, #report_score').on('change', function() {
+        loadAuditReports(1);
+    });
+
+    // Initial load
+    $(document).ready(function() {
+        loadAuditReports(1);
+    });
 </script>
 @endpush
 

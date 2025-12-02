@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @push('styles')
+    @include('sections.daterange_css')
     <script src="{{ asset('vendor/jquery/Chart.min.js') }}"></script>
     <style>
         .stat-card {
@@ -191,7 +192,12 @@
         .audit-table tr:hover {
             background: #f8fafc;
         }
-
+        #datatableRange, #datatableRange2 {
+            width: 290px;
+        }
+        .f-w-500 {
+            font-weight: 200 !important;
+        }
     </style>
 @endpush
 
@@ -256,7 +262,41 @@
 
 @push('scripts')
     <script src="{{ asset('vendor/jquery/daterangepicker.min.js') }}"></script>
-    <script>
+    <script type="text/javascript">
+        $(function() {
+            // Define showTable function for date range picker callback
+            window.showTable = function() {
+                loadRecentAudits(1);
+            };
+
+            var start = moment().subtract(89, 'days');
+            var end = moment();
+
+            // Callback function to format date range in input
+            function cb(start, end) {
+                $('#datatableRange').val(start.format('{{ company()->moment_date_format }}') + ' - ' + end.format('{{ company()->moment_date_format }}'));
+            }
+
+            $('#datatableRange').daterangepicker({
+                autoUpdateInput: false,
+                locale: daterangeLocale,
+                linkedCalendars: false,
+                startDate: start,
+                endDate: end,
+                showDropdowns: true,
+                ranges: daterangeConfig
+            }, cb);
+
+            $('#datatableRange').on('apply.daterangepicker', function(ev, picker) {
+                showTable();
+            });
+
+            @if (request('start') && request('end'))
+                $('#datatableRange').data('daterangepicker').setStartDate("{{ request('start') }}");
+                $('#datatableRange').data('daterangepicker').setEndDate("{{ request('end') }}");
+                $('#datatableRange').val("{{ request('start') }} - {{ request('end') }}");
+            @endif
+        });
 
         $('#exportAuditHistory').click(function() {
             var dateRangePicker = $('#datatableRange').data('daterangepicker');
@@ -264,7 +304,7 @@
             var startDate = '';
             var endDate = '';
 
-            if (dateRangeVal !== '') {
+            if (dateRangeVal !== '' && dateRangePicker) {
                 startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
                 endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
             }
@@ -292,7 +332,7 @@
             var startDate = null;
             var endDate = null;
 
-            if (dateRangeVal !== '') {
+            if (dateRangeVal !== '' && dateRangePicker) {
                 startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
                 endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
             }

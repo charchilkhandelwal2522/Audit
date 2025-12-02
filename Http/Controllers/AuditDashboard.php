@@ -137,7 +137,7 @@ class AuditDashboard extends AccountBaseController
         if ($request->start_date && $request->end_date) {
             $startDate = Carbon::createFromFormat(company()->date_format, $request->start_date)->startOfDay();
             $endDate = Carbon::createFromFormat(company()->date_format, $request->end_date)->endOfDay();
-            $query->whereBetween('created_at', [$startDate, $endDate]);
+            $query->whereBetween('completed_at', [$startDate, $endDate]);
         }
 
         $audits = $query->orderBy('created_at', 'desc')->paginate($perPage);
