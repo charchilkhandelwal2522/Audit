@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Audit Report #{{ $audit->id }}</title>
+    <title>@lang('audit::app.auditReports') #{{ $audit->id }}</title>
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
@@ -48,10 +48,12 @@
             width: 30%;
         }
         .section-title {
-            background-color: #007bff;
-            color: white;
+            color: grey;
             padding: 10px;
             margin: 20px 0 10px 0;
+            border: 1px solid #DBDBDB;
+            background-color: #f1f1f3;
+            font-weight: 700;
         }
         .checkpoint-table {
             width: 100%;
@@ -105,84 +107,83 @@
 </head>
 <body>
     <div class="header">
-        <h1>Audit Report</h1>
-        <p>{{ $audit->template->title }}</p>
-        <p>Generated on: {{ now()->format('F d, Y H:i') }}</p>
+        <h1>@lang('audit::app.auditReport')</h1>
+        <p>@lang('audit::app.generatedOn') {{ now()->format('F d, Y H:i') }}</p>
     </div>
 
     <!-- Score Box -->
     <div class="score-box">
         <div class="score">{{ $audit->score }}%</div>
-        <p>Overall Score</p>
+        <p>@lang('audit::app.overallScore')</p>
     </div>
 
     <!-- Audit Information -->
-    <h3 class="section-title">Audit Information</h3>
+    <h3 class="section-title">@lang('audit::app.auditInformation')</h3>
     <table class="info-table">
         <tr>
-            <td>Audit ID</td>
+            <td>@lang('app.id')</td>
             <td>#{{ $audit->id }}</td>
         </tr>
         <tr>
-            <td>Department</td>
+            <td>@lang('audit::app.department')</td>
             <td>{{ $audit->department ? $audit->department->team_name : '--' }}</td>
         </tr>
         <tr>
-            <td>Location</td>
-            <td>{{ $audit->location ?: '--' }}</td>
+            <td>@lang('audit::app.template')</td>
+            <td>{{ $audit->template->title }}</td>
         </tr>
         <tr>
-            <td>Auditor</td>
+            <td>@lang('audit::app.auditor')</td>
             <td>{{ $audit->auditor ? $audit->auditor->name : '--' }}</td>
         </tr>
         <tr>
-            <td>Auditee</td>
+            <td>@lang('audit::app.auditee')</td>
             <td>{{ $audit->auditee ? $audit->auditee->name : '--' }}</td>
         </tr>
         <tr>
-            <td>Started</td>
+            <td>@lang('audit::app.startedOn')</td>
             <td>{{ $audit->started_at ? $audit->started_at->format('F d, Y H:i') : '--' }}</td>
         </tr>
         <tr>
-            <td>Completed</td>
+            <td>@lang('audit::app.completedOn')</td>
             <td>{{ $audit->completed_at ? $audit->completed_at->format('F d, Y H:i') : '--' }}</td>
         </tr>
         <tr>
-            <td>Duration</td>
+            <td>@lang('audit::app.totalTimeTaken')</td>
             <td>{{ $audit->duration_formatted }}</td>
         </tr>
     </table>
 
     <!-- Score Summary -->
-    <h3 class="section-title">Score Summary</h3>
+    <h3 class="section-title">@lang('audit::app.scoreSummary')</h3>
     <table class="info-table">
         <tr>
-            <td>Total Checkpoints</td>
+            <td>@lang('audit::app.totalCheckpoints')</td>
             <td>{{ $audit->total_checkpoints }}</td>
         </tr>
         <tr>
-            <td>Completed</td>
+            <td>@lang('audit::app.completed')</td>
             <td>{{ $audit->completed_checkpoints }}</td>
         </tr>
         <tr>
-            <td>Partially Completed</td>
+            <td>@lang('audit::app.partiallyCompleted')</td>
             <td>{{ $audit->partially_completed_checkpoints }}</td>
         </tr>
         <tr>
-            <td>Not Completed</td>
+            <td>@lang('audit::app.notCompleted')</td>
             <td>{{ $audit->total_checkpoints - $audit->completed_checkpoints - $audit->partially_completed_checkpoints }}</td>
         </tr>
     </table>
 
     <!-- Checkpoint Details -->
-    <h3 class="section-title">Checkpoint Details</h3>
+    <h3 class="section-title">@lang('audit::app.checkpointDetails')</h3>
     <table class="checkpoint-table">
         <thead>
             <tr>
                 <th width="5%">#</th>
-                <th width="30%">Checkpoint</th>
-                <th width="15%">Status</th>
-                <th width="50%">Notes</th>
+                <th width="30%">@lang('audit::app.checkpoint')</th>
+                <th width="15%">@lang('app.status')</th>
+                <th width="50%">@lang('app.notes')</th>
             </tr>
         </thead>
         <tbody>
@@ -197,11 +198,11 @@
                 </td>
                 <td>
                     @if($response->status == 'completed')
-                        <span class="status-completed">✓ Completed</span>
+                        <span class="status-completed">✓ @lang('audit::app.completed')</span>
                     @elseif($response->status == 'partially_completed')
-                        <span class="status-partial">◐ Partial</span>
+                        <span class="status-partial">◐ @lang('audit::app.partiallyCompleted')</span>
                     @else
-                        <span class="status-not-completed">✗ Not Completed</span>
+                        <span class="status-not-completed">✗ @lang('audit::app.notCompleted')</span>
                     @endif
                 </td>
                 <td>{{ $response->notes ?: '--' }}</td>
@@ -212,13 +213,13 @@
 
     @if($audit->summary)
     <div class="summary-box">
-        <h4>Summary</h4>
+        <h4>@lang('app.summary')</h4>
         <p>{{ $audit->summary }}</p>
     </div>
     @endif
 
     <div class="footer">
-        <p>This report was automatically generated by the Audit & Store Check Module.</p>
+        <p>@lang('audit::messages.auditReportGenerated')</p>
         <p>Report ID: {{ $audit->id }} | Generated: {{ now()->format('Y-m-d H:i:s') }}</p>
     </div>
 </body>

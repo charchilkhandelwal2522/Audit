@@ -541,7 +541,7 @@
                 $isPass = $score >= 60;
             @endphp
             <div class="audit-history-item" style="background: #fff; border: 1px solid #e3e6ef; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 20px; transition: all 0.2s;">
-                <div class="score-badge-history" style="width: 56px; height: 56px; background: {{ $isPass ? '#d1fae5' : '#fee2e2' }}; color: {{ $isPass ? '#10b981' : '#ef4444' }}; border-radius: 20%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0;">
+                <div class="score-badge-history" style="width: 56px; height: 56px; background: {{ $isPass ? '#d1fae5' : '#fee2e2' }}; color: {{ $isPass ? '#10b981' : '#ef4444' }}; border-radius: %; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0;">
                     {{ $score }}%
                 </div>
                 <div style="flex: 1; min-width: 0;">

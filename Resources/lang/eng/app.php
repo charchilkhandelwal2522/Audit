@@ -241,6 +241,7 @@ return [
     
     // Reports Page
     'auditReports' => 'Audit Reports',
+    'auditReport' => 'Audit Report',
     'searchByAuditee' => 'Search by auditee...',
     'allScores' => 'All Scores',
     'highScore' => 'High Score',
@@ -256,5 +257,11 @@ return [
     'allStatuses' => 'All Statuses',
     'searchPlaceholder' => 'Search by ID, Auditee, Auditor...',
     'failed' => 'Failed',
+
+    'auditInformation' => 'Audit Information',
+    'scoreSummary' => 'Score Summary',
+    'totalCheckpoints' => 'Total Checkpoints',
+    'generatedOn' => 'Generated On',
+    'checkpointDetails' => 'Checkpoint Details',
 ];
 
