@@ -325,8 +325,8 @@
 
     // Export buttons
     $('#exportExcel').on('click', function() {
-        var dateRangePicker = $('#report_date_range').data('daterangepicker');
-        var dateRangeVal = $('#report_date_range').val();
+        var dateRangePicker = $('#datatableRange').data('daterangepicker');
+        var dateRangeVal = $('#datatableRange').val();
         var startDate = '';
         var endDate = '';
 
@@ -347,8 +347,8 @@
     });
 
     $('#exportPdf').on('click', function() {
-        var dateRangePicker = $('#report_date_range').data('daterangepicker');
-        var dateRangeVal = $('#report_date_range').val();
+        var dateRangePicker = $('#datatableRange').data('daterangepicker');
+        var dateRangeVal = $('#datatableRange').val();
         var startDate = '';
         var endDate = '';
 
@@ -373,8 +373,8 @@
     function loadAuditReports(page = 1) {
         reportCurrentPage = page;
 
-        var dateRangePicker = $('#report_date_range').data('daterangepicker');
-        var dateRangeVal = $('#report_date_range').val();
+        var dateRangePicker = $('#datatableRange').data('daterangepicker');
+        var dateRangeVal = $('#datatableRange').val();
         var startDate = null;
         var endDate = null;
 
@@ -397,10 +397,6 @@
             success: function(response) {
                 renderAuditReportTable(response);
             },
-            error: function(xhr) {
-                console.log('Error:', xhr.responseText);
-                $('#auditReportBody').html('<tr><td colspan="6" class="text-center text-danger py-4">@lang("messages.errorOccured")</td></tr>');
-            }
         });
     }
 
@@ -507,6 +503,26 @@
     });
 
     $('#report_department, #report_score').on('change', function() {
+        loadAuditReports(1);
+    });
+
+    $('#clearReportFilters').on('click', function() {
+        // Clear search input
+        $('#report_search').val('');
+        
+        // Clear date range picker
+        $('#datatableRange').val('');
+        var dateRangePicker = $('#datatableRange').data('daterangepicker');
+        if (dateRangePicker) {
+            dateRangePicker.setStartDate(moment().subtract(89, 'days'));
+            dateRangePicker.setEndDate(moment());
+        }
+        
+        // Reset dropdowns to 'all'
+        $('#report_department').val('all').selectpicker('refresh');
+        $('#report_score').val('all').selectpicker('refresh');
+        
+        // Reload audit reports
         loadAuditReports(1);
     });
 

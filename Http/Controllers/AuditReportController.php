@@ -138,7 +138,7 @@ class AuditReportController extends AccountBaseController
             $audits->whereBetween('completed_at', [$startDate, $endDate]);
         }
 
-        return $audits->orderBy('completed_at', 'desc')->paginate($perPage);
+        return $audits->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     /**
