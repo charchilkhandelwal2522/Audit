@@ -278,126 +278,200 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('vendor/jquery/daterangepicker.min.js') }}"></script>
-    <script>
-        
-        // Date Range Picker
-        $('#dashboard_date_range').daterangepicker({
-            autoUpdateInput: false,
-            locale: {
-                cancelLabel: '@lang("audit::app.clear")',
-                applyLabel: '@lang("audit::app.apply")',
-                format: '{{ company()->date_format }}'
-            }
-        });
-
-        $('#dashboard_date_range').on('apply.daterangepicker', function(ev, picker) {
-            $(this).val(picker.startDate.format('{{ company()->moment_date_format }}') + ' - ' + picker.endDate.format('{{ company()->moment_date_format }}'));
-        });
-
-        $('#dashboard_date_range').on('cancel.daterangepicker', function(ev, picker) {
-            $(this).val('');
-        });
-
-        // Dashboard filters and table
-        let currentPage = 1;
-
-        function loadRecentAudits(page = 1) {
-            currentPage = page;
-
-            $.ajax({
-                url: "{{ route('audit-dashboard.audits') }}",
-                data: {
-                    page: page,
-                    department_id: $('#dashboard_department').val(),
-                    auditor_id: $('#dashboard_auditor').val(),
-                    auditee_id: $('#dashboard_auditee').val(),
-                    date_range: $('#dashboard_date_range').val(),
-                    per_page: 5
-                },
-                success: function(response) {
-                    renderAuditsTable(response);
-                }
-            });
-        }
-
-        function renderAuditsTable(response) {
-            let html = '';
-            const audits = response.data || [];
-
-            if (audits.length === 0) {
-                html = '<tr><td colspan="7" class="text-center text-muted py-4">@lang("messages.noRecordFound")</td></tr>';
-            } else {
-                audits.forEach(function(audit) {
-                    let scoreClass = 'high';
-                    if (audit.score < 60) scoreClass = 'low';
-                    else if (audit.score < 85) scoreClass = 'medium';
-
-                    html += `
-                        <tr>
-                            <td>${audit.template?.title || '-'}</td>
-                            <td>${audit.department?.team_name || '-'}</td>
-                            <td>${audit.auditor?.name || '-'}</td>
-                            <td>${audit.auditee?.name || '-'}</td>
-                            <td><span class="score-badge ${scoreClass}">${Math.round(audit.score)}%</span></td>
-                            <td>${audit.completed_at ? new Date(audit.completed_at).toLocaleDateString() : '-'}</td>
-                            <td>
-                                <a href="/account/audits/${audit.id}" class="action-btn" title="@lang('app.view')">
-                                    <i class="fa fa-eye"></i>
-                                </a>
-                                <a href="/account/audits/${audit.id}/export-pdf" class="action-btn" title="@lang('audit::app.exportPdf')">
-                                    <i class="fa fa-file-pdf"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-
-            $('#recentAuditsBody').html(html);
-
-            // Update pagination info
-            if (response.total) {
-                const from = response.from || 0;
-                const to = response.to || 0;
-                $('#showingText').text(`Showing ${from} to ${to} of ${response.total} results`);
-
-                // Simple pagination
-                let paginationHtml = '<ul class="pagination pagination-sm mb-0">';
-                if (response.current_page > 1) {
-                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="loadRecentAudits(${response.current_page - 1}); return false;"><i class="fa fa-chevron-left"></i></a></li>`;
-                }
-                for (let i = 1; i <= response.last_page && i <= 3; i++) {
-                    paginationHtml += `<li class="page-item ${response.current_page === i ? 'active' : ''}"><a class="page-link" href="#" onclick="loadRecentAudits(${i}); return false;">${i}</a></li>`;
-                }
-                if (response.current_page < response.last_page) {
-                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="loadRecentAudits(${response.current_page + 1}); return false;"><i class="fa fa-chevron-right"></i></a></li>`;
-                }
-                paginationHtml += '</ul>';
-                $('#paginationNav').html(paginationHtml);
-            } else {
-                $('#showingText').text('');
-                $('#paginationNav').html('');
-            }
-        }
+<script src="{{ asset('vendor/jquery/daterangepicker.min.js') }}"></script>
+<script>
+    $(document).ready(function() {
 
         // Filter events
-        $('#applyDashboardFilters').on('click', function() {
-            loadRecentAudits(1);
+        $('#report_search').on('keyup', function() {
+            loadAuditReports(1);
         });
 
-        $('#clearDashboardFilters').on('click', function() {
-            $('#dashboard_date_range').val('');
-            $('#dashboard_department').val('all').selectpicker('refresh');
-            $('#dashboard_auditor').val('all').selectpicker('refresh');
-            $('#dashboard_auditee').val('all').selectpicker('refresh');
-            loadRecentAudits(1);
+        $('#report_department, #report_score').on('change', function() {
+            loadAuditReports(1);
+        });
+
+        $('#clearReportFilters').on('click', function() {
+            $('#report_search').val('');
+            $('#report_date_range').val('');
+            $('#report_department').val('all').selectpicker('refresh');
+            $('#report_score').val('all').selectpicker('refresh');
+            loadAuditReports(1);
+        });
+
+        // Export buttons
+        $('#exportExcel').on('click', function() {
+            var dateRangePicker = $('#report_date_range').data('daterangepicker');
+            var dateRangeVal = $('#report_date_range').val();
+            var startDate = '';
+            var endDate = '';
+
+            if (dateRangeVal !== '') {
+                startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
+                endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
+            }
+
+            let params = new URLSearchParams({
+                department_id: $('#report_department').val() || 'all',
+                score_range: $('#report_score').val() || 'all',
+                search: $('#report_search').val() || '',
+                start_date: startDate,
+                end_date: endDate,
+                format: 'excel'
+            });
+            window.location.href = "{{ route('audit-reports.export') }}?" + params.toString();
+        });
+
+        $('#exportPdf').on('click', function() {
+            var dateRangePicker = $('#report_date_range').data('daterangepicker');
+            var dateRangeVal = $('#report_date_range').val();
+            var startDate = '';
+            var endDate = '';
+
+            if (dateRangeVal !== '') {
+                startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
+                endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
+            }
+
+            let params = new URLSearchParams({
+                department_id: $('#report_department').val() || 'all',
+                score_range: $('#report_score').val() || 'all',
+                search: $('#report_search').val() || '',
+                start_date: startDate,
+                end_date: endDate,
+                format: 'pdf'
+            });
+            window.location.href = "{{ route('audit-reports.export') }}?" + params.toString();
         });
 
         // Initial load
-        $(document).ready(function() {
-            loadRecentAudits(1);
+        loadAuditReports(1);
+    });
+
+    let reportCurrentPage = 1;
+
+    function loadAuditReports(page = 1) {
+        reportCurrentPage = page;
+
+        var dateRangePicker = $('#report_date_range').data('daterangepicker');
+        var dateRangeVal = $('#report_date_range').val();
+        var startDate = null;
+        var endDate = null;
+
+        if (dateRangeVal !== '') {
+            startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
+            endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
+        }
+
+        $.ajax({
+            url: "{{ route('audit-reports.audits') }}",
+            data: {
+                page: page,
+                department_id: $('#report_department').val() || 'all',
+                score_range: $('#report_score').val() || 'all',
+                search: $('#report_search').val() || '',
+                start_date: startDate,
+                end_date: endDate,
+                per_page: 4
+            },
+            success: function(response) {
+                renderAuditReportTable(response);
+            },
+            error: function(xhr) {
+                console.log('Error:', xhr.responseText);
+                $('#auditReportBody').html('<tr><td colspan="6" class="text-center text-danger py-4">@lang("messages.errorOccured")</td></tr>');
+            }
         });
-    </script>
+    }
+
+    function renderAuditReportTable(response) {
+        let html = '';
+        const audits = response.data || [];
+
+        if (audits.length === 0) {
+            html = '<tr><td colspan="6" class="text-center text-muted py-4">@lang("messages.noRecordFound")</td></tr>';
+        } else {
+            audits.forEach(function(audit) {
+                let scoreClass = 'high';
+                let scoreValue = Math.round(audit.score);
+                if (scoreValue < 60) scoreClass = 'low';
+                else if (scoreValue < 85) scoreClass = 'medium';
+
+                let scoreColor = scoreClass === 'high' ? 'text-success' : (scoreClass === 'medium' ? 'text-warning' : 'text-danger');
+
+                html += `
+                    <tr>
+                        <td>${audit.auditee?.name || '-'}</td>
+                        <td>${audit.department?.team_name || '-'}</td>
+                        <td>${audit.auditor?.name || '-'}</td>
+                        <td><span class="${scoreColor} font-weight-bold">${scoreValue}%</span></td>
+                        <td>${audit.completed_at ? new Date(audit.completed_at).toLocaleDateString() : '-'}</td>
+                        <td>
+                            <a href="{{ url('account/audits') }}/${audit.id}" class="action-btn openRightModal" title="@lang('app.view')">
+                                <i class="fa fa-eye"></i>
+                            </a>
+                            <a href="{{ url('account/audits') }}/${audit.id}/export-pdf" class="action-btn" title="@lang('audit::app.exportPdf')">
+                                <i class="fa fa-download"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        $('#auditReportBody').html(html);
+
+        // Update pagination info
+        if (response.total) {
+            const from = response.from || 0;
+            const to = response.to || 0;
+            $('#reportShowingText').text(`Showing ${from} to ${to} of ${response.total} entries`);
+
+            // Build pagination
+            let paginationHtml = '<ul class="pagination pagination-sm mb-0">';
+            
+            // Previous button
+            if (response.current_page > 1) {
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="loadAuditReports(${response.current_page - 1}); return false;">Previous</a></li>`;
+            } else {
+                paginationHtml += `<li class="page-item disabled"><span class="page-link">Previous</span></li>`;
+            }
+
+            // Page numbers
+            let startPage = Math.max(1, response.current_page - 1);
+            let endPage = Math.min(response.last_page, startPage + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                if (response.current_page === i) {
+                    paginationHtml += `<li class="page-item active"><span class="page-link" style="background-color: #ef4444; border-color: #ef4444;">${i}</span></li>`;
+                } else {
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="loadAuditReports(${i}); return false;">${i}</a></li>`;
+                }
+            }
+
+            // Ellipsis and last page
+            if (endPage < response.last_page - 1) {
+                paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            if (endPage < response.last_page) {
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="loadAuditReports(${response.last_page}); return false;">${response.last_page}</a></li>`;
+            }
+
+            // Next button
+            if (response.current_page < response.last_page) {
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="loadAuditReports(${response.current_page + 1}); return false;">Next</a></li>`;
+            } else {
+                paginationHtml += `<li class="page-item disabled"><span class="page-link">Next</span></li>`;
+            }
+
+            paginationHtml += '</ul>';
+            $('#reportPaginationNav').html(paginationHtml);
+        } else {
+            $('#reportShowingText').text('');
+            $('#reportPaginationNav').html('');
+        }
+    }
+</script>
 @endpush
+
 

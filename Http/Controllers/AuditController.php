@@ -125,6 +125,14 @@ class AuditController extends AccountBaseController
             abort_403($this->audit->auditor_id != user()->id && $this->audit->auditee_id != user()->id);
         }
 
+        // Get audit history for the same template (excluding current audit)
+        $this->auditHistory = Audit::with(['template', 'department', 'auditor', 'auditee'])
+            ->where('audit_template_id', $this->audit->audit_template_id)
+            ->where('id', '!=', $id)
+            ->orderBy('completed_at', 'desc')
+            ->limit(5)
+            ->get();
+
         $this->view = 'audit::audits.ajax.show';
 
         if (request()->ajax()) {

@@ -132,13 +132,10 @@ class AuditReportController extends AccountBaseController
         }
 
         // Filter by date range
-        if ($request->date_range) {
-            $dates = explode(' - ', $request->date_range);
-            if (count($dates) == 2) {
-                $startDate = Carbon::createFromFormat($this->company->date_format, trim($dates[0]))->startOfDay();
-                $endDate = Carbon::createFromFormat($this->company->date_format, trim($dates[1]))->endOfDay();
-                $audits->whereBetween('completed_at', [$startDate, $endDate]);
-            }
+        if ($request->start_date && $request->end_date) {
+            $startDate = Carbon::createFromFormat($this->company->date_format, $request->start_date)->startOfDay();
+            $endDate = Carbon::createFromFormat($this->company->date_format, $request->end_date)->endOfDay();
+            $audits->whereBetween('completed_at', [$startDate, $endDate]);
         }
 
         return $audits->orderBy('completed_at', 'desc')->paginate($perPage);
@@ -180,13 +177,10 @@ class AuditReportController extends AccountBaseController
             });
         }
 
-        if ($request->date_range) {
-            $dates = explode(' - ', $request->date_range);
-            if (count($dates) == 2) {
-                $startDate = Carbon::createFromFormat($this->company->date_format, trim($dates[0]))->startOfDay();
-                $endDate = Carbon::createFromFormat($this->company->date_format, trim($dates[1]))->endOfDay();
-                $audits->whereBetween('completed_at', [$startDate, $endDate]);
-            }
+        if ($request->start_date && $request->end_date) {
+            $startDate = Carbon::createFromFormat($this->company->date_format, $request->start_date)->startOfDay();
+            $endDate = Carbon::createFromFormat($this->company->date_format, $request->end_date)->endOfDay();
+            $audits->whereBetween('completed_at', [$startDate, $endDate]);
         }
 
         $audits = $audits->orderBy('completed_at', 'desc')->get();

@@ -524,4 +524,40 @@
         @endforeach
     </div>
     @endif
+
+    <!-- Audit History -->
+    @if($auditHistory && $auditHistory->count() > 0)
+    <div class="audit-history-card" style="background: #fff; border-radius: 12px; padding: 25px; margin-top: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 class="section-title" style="margin: 0; font-size: 18px; font-weight: 600; color: #1a1a2e;">@lang('audit::app.auditHistory')</h3>
+            <a href="{{ route('audits.index') }}" style="color: #007bff; text-decoration: none; font-size: 14px; font-weight: 500;">
+                @lang('audit::app.viewAllAudits') <i class="fa fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        <div class="audit-history-list">
+            @foreach($auditHistory as $historyAudit)
+            @php
+                $score = round($historyAudit->score ?? 0);
+                $isPass = $score >= 60;
+            @endphp
+            <div class="audit-history-item" style="background: #fff; border: 1px solid #e3e6ef; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 20px; transition: all 0.2s;">
+                <div class="score-badge-history" style="width: 56px; height: 56px; background: {{ $isPass ? '#d1fae5' : '#fee2e2' }}; color: {{ $isPass ? '#10b981' : '#ef4444' }}; border-radius: 20%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0;">
+                    {{ $score }}%
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 15px; font-weight: 500; color: #1a1a2e; margin-bottom: 6px;">
+                        {{ $historyAudit->completed_at ? $historyAudit->completed_at->translatedFormat('F j, Y') : '--' }}
+                    </div>
+                    <div style="font-size: 13px; color: #6c757d; line-height: 1.4;">
+                        {{ $historyAudit->template->title ?? '--' }}
+                    </div>
+                </div>
+                <div style="color: {{ $isPass ? '#10b981' : '#ef4444' }}; font-weight: 500; font-size: 14px; flex-shrink: 0;">
+                    {{ $isPass ? __('audit::app.pass') : __('audit::app.fail') }}
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 </div>
