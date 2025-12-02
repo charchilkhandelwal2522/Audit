@@ -140,7 +140,7 @@ class AuditDashboard extends AccountBaseController
             $query->whereBetween('completed_at', [$startDate, $endDate]);
         }
 
-        $audits = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        $audits = $query->orderBy('completed_at', 'desc')->paginate($perPage);
 
         return response()->json($audits);
     }
