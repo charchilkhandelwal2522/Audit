@@ -164,6 +164,21 @@ class AuditDataTable extends BaseDataTable
             });
         }
 
+        if ($this->viewPermission == 'owned') {
+            $audits->where(function ($query) {
+                $query->where('auditor_id', user()->id)
+                    ->orWhere('auditee_id', user()->id);
+            });
+        } elseif ($this->viewPermission == 'added') {
+            $audits->where('added_by', user()->id);
+        } elseif($this->viewPermission == 'both') {
+            $audits->where(function ($query) {
+                $query->where('auditor_id', user()->id)
+                    ->orWhere('auditee_id', user()->id)
+                    ->orWhere('added_by', user()->id);
+            });
+        }
+
         return $audits->orderBy('created_at', 'desc');
     }
 

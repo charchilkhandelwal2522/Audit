@@ -24,7 +24,7 @@ return new class extends Migration
                 'display_name' => 'View Audit Template',
                 'module_id' => $module->id,
                 'is_custom' => 1,
-                'allowed_permissions' => Permission::ALL_4_ADDED_1_OWNED_2_BOTH_3_NONE_5,
+                'allowed_permissions' => Permission::ALL_4_ADDED_1_NONE_5,
             ],
             [
                 'name' => 'edit_audit_template',

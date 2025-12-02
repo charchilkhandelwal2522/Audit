@@ -85,14 +85,11 @@
         <!-- Add Audit Button -->
         <div class="d-grid d-lg-flex d-md-flex action-bar">
             <div id="table-actions" class="flex-grow-1 align-items-center d-flex">
-                @if ($addPermission == 'all' || $addPermission == 'added')
+                @if ($addPermission == 'all')
                     <x-forms.link-primary :link="route('audits.create')" class="mr-3 openRightModal float-left" icon="plus">
                         @lang('audit::app.createAudit')
                     </x-forms.link-primary>
                 @endif
-                {{-- <x-forms.link-secondary :link="route('audits.my-audits')" class="mr-3 float-left">
-                    @lang('audit::app.myAudits')
-                </x-forms.link-secondary> --}}
             </div>
         </div>
         <!-- End Add Audit Button -->

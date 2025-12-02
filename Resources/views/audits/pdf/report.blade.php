@@ -198,11 +198,11 @@
                 </td>
                 <td>
                     @if($response->status == 'completed')
-                        <span class="status-completed">✓ @lang('audit::app.completed')</span>
+                        @lang('audit::app.completed')
                     @elseif($response->status == 'partially_completed')
-                        <span class="status-partial">◐ @lang('audit::app.partiallyCompleted')</span>
+                        @lang('audit::app.partiallyCompleted')
                     @else
-                        <span class="status-not-completed">✗ @lang('audit::app.notCompleted')</span>
+                        @lang('audit::app.notCompleted')
                     @endif
                 </td>
                 <td>{{ $response->notes ?: '--' }}</td>
