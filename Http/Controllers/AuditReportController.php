@@ -4,7 +4,9 @@ namespace Modules\Audit\Http\Controllers;
 
 use App\Http\Controllers\AccountBaseController;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Modules\Audit\Entities\Audit;
+use Modules\Audit\Exports\AuditReportExport;
 use App\Models\Team;
 use App\Models\User;
 use Carbon\Carbon;
@@ -146,55 +148,78 @@ class AuditReportController extends AccountBaseController
      */
     public function export(Request $request)
     {
-        $audits = Audit::with(['template', 'department', 'auditor', 'auditee'])
-            ->where('status', Audit::STATUS_COMPLETED);
-
-        // Apply same filters as audits method
-        if ($request->department_id && $request->department_id != 'all') {
-            $audits->where('department_id', $request->department_id);
-        }
-
-        if ($request->score_range && $request->score_range != 'all') {
-            switch ($request->score_range) {
-                case 'high':
-                    $audits->where('score', '>=', 85);
-                    break;
-                case 'medium':
-                    $audits->whereBetween('score', [60, 84]);
-                    break;
-                case 'low':
-                    $audits->where('score', '<', 60);
-                    break;
-            }
-        }
-
-        if ($request->search) {
-            $search = $request->search;
-            $audits->where(function ($query) use ($search) {
-                $query->whereHas('auditee', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%');
-                });
-            });
-        }
+        $departmentId = $request->department_id;
+        $scoreRange = $request->score_range;
+        $search = $request->search;
+        $startDate = null;
+        $endDate = null;
 
         if ($request->start_date && $request->end_date) {
             $startDate = Carbon::createFromFormat($this->company->date_format, $request->start_date)->startOfDay();
             $endDate = Carbon::createFromFormat($this->company->date_format, $request->end_date)->endOfDay();
-            $audits->whereBetween('completed_at', [$startDate, $endDate]);
         }
 
-        $audits = $audits->orderBy('completed_at', 'desc')->get();
-
-        // For now, redirect back. You can implement actual export logic here
-        // using Maatwebsite Excel or similar package
         if ($request->format === 'excel') {
-            // TODO: Implement Excel export
-            return back()->with('success', 'Excel export coming soon');
+            $filename = 'audit-reports-' . now()->format('Y-m-d') . '.xlsx';
+            
+            return Excel::download(
+                new AuditReportExport($departmentId, $scoreRange, $search, $startDate, $endDate),
+                $filename
+            );
         }
 
         if ($request->format === 'pdf') {
-            // TODO: Implement PDF export
-            return back()->with('success', 'PDF export coming soon');
+            // Build query with filters
+            $audits = Audit::with(['template', 'department', 'auditor', 'auditee'])
+                ->where('status', Audit::STATUS_COMPLETED);
+
+            if ($departmentId && $departmentId != 'all') {
+                $audits->where('department_id', $departmentId);
+            }
+
+            if ($scoreRange && $scoreRange != 'all') {
+                switch ($scoreRange) {
+                    case 'high':
+                        $audits->where('score', '>=', 85);
+                        break;
+                    case 'medium':
+                        $audits->whereBetween('score', [60, 84]);
+                        break;
+                    case 'low':
+                        $audits->where('score', '<', 60);
+                        break;
+                }
+            }
+
+            if ($search) {
+                $searchTerm = $search;
+                $audits->where(function ($query) use ($searchTerm) {
+                    $query->whereHas('auditee', function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', '%' . $searchTerm . '%');
+                    })
+                    ->orWhereHas('auditor', function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', '%' . $searchTerm . '%');
+                    })
+                    ->orWhereHas('department', function ($q) use ($searchTerm) {
+                        $q->where('team_name', 'like', '%' . $searchTerm . '%');
+                    });
+                });
+            }
+
+            if ($startDate && $endDate) {
+                $audits->whereBetween('completed_at', [$startDate, $endDate]);
+            }
+
+            $audits = $audits->orderBy('completed_at', 'desc')->get();
+
+            $pdf = app('dompdf.wrapper');
+            $pdf->loadView('audit::reports.pdf', [
+                'audits' => $audits,
+                'company' => company()
+            ]);
+
+            $filename = 'audit-reports-' . now()->format('Y-m-d') . '.pdf';
+            return $pdf->download($filename);
         }
 
         return back();

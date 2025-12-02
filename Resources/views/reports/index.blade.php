@@ -321,10 +321,9 @@
             $('#datatableRange').data('daterangepicker').setEndDate("{{ request('end') }}");
             $('#datatableRange').val("{{ request('start') }} - {{ request('end') }}");
         @endif
-    });
 
-    // Export buttons
-    $('#exportExcel').on('click', function() {
+        // Export buttons
+        $('#exportExcel').on('click', function() {
         var dateRangePicker = $('#datatableRange').data('daterangepicker');
         var dateRangeVal = $('#datatableRange').val();
         var startDate = '';
@@ -344,28 +343,61 @@
             format: 'excel'
         });
         window.location.href = "{{ route('audit-reports.export') }}?" + params.toString();
-    });
-
-    $('#exportPdf').on('click', function() {
-        var dateRangePicker = $('#datatableRange').data('daterangepicker');
-        var dateRangeVal = $('#datatableRange').val();
-        var startDate = '';
-        var endDate = '';
-
-        if (dateRangeVal !== '' && dateRangePicker) {
-            startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
-            endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
-        }
-
-        let params = new URLSearchParams({
-            department_id: $('#report_department').val() || 'all',
-            score_range: $('#report_score').val() || 'all',
-            search: $('#report_search').val() || '',
-            start_date: startDate,
-            end_date: endDate,
-            format: 'pdf'
         });
-        window.location.href = "{{ route('audit-reports.export') }}?" + params.toString();
+
+        $('#exportPdf').on('click', function() {
+            var dateRangePicker = $('#datatableRange').data('daterangepicker');
+            var dateRangeVal = $('#datatableRange').val();
+            var startDate = '';
+            var endDate = '';
+
+            if (dateRangeVal !== '' && dateRangePicker) {
+                startDate = dateRangePicker.startDate.format('{{ company()->moment_date_format }}');
+                endDate = dateRangePicker.endDate.format('{{ company()->moment_date_format }}');
+            }
+
+            let params = new URLSearchParams({
+                department_id: $('#report_department').val() || 'all',
+                score_range: $('#report_score').val() || 'all',
+                search: $('#report_search').val() || '',
+                start_date: startDate,
+                end_date: endDate,
+                format: 'pdf'
+            });
+            window.location.href = "{{ route('audit-reports.export') }}?" + params.toString();
+        });
+
+        // Filter events
+        $('#report_search').on('keyup', function() {
+            loadAuditReports(1);
+        });
+
+        $('#report_department, #report_score').on('change', function() {
+            loadAuditReports(1);
+        });
+
+        $('#clearReportFilters').on('click', function() {
+            // Clear search input
+            $('#report_search').val('');
+            
+            // Clear date range picker
+            $('#datatableRange').val('');
+            var dateRangePicker = $('#datatableRange').data('daterangepicker');
+            if (dateRangePicker) {
+                dateRangePicker.setStartDate(moment().subtract(89, 'days'));
+                dateRangePicker.setEndDate(moment());
+            }
+            
+            // Reset dropdowns to 'all'
+            $('#report_department').val('all').selectpicker('refresh');
+            $('#report_score').val('all').selectpicker('refresh');
+            
+            // Reload audit reports
+            loadAuditReports(1);
+        });
+
+        // Initial load
+        loadAuditReports(1);
     });
 
     let reportCurrentPage = 1;
@@ -496,40 +528,6 @@
             $('#reportPaginationNav').html('');
         }
     }
-
-    // Filter events
-    $('#report_search').on('keyup', function() {
-        loadAuditReports(1);
-    });
-
-    $('#report_department, #report_score').on('change', function() {
-        loadAuditReports(1);
-    });
-
-    $('#clearReportFilters').on('click', function() {
-        // Clear search input
-        $('#report_search').val('');
-        
-        // Clear date range picker
-        $('#datatableRange').val('');
-        var dateRangePicker = $('#datatableRange').data('daterangepicker');
-        if (dateRangePicker) {
-            dateRangePicker.setStartDate(moment().subtract(89, 'days'));
-            dateRangePicker.setEndDate(moment());
-        }
-        
-        // Reset dropdowns to 'all'
-        $('#report_department').val('all').selectpicker('refresh');
-        $('#report_score').val('all').selectpicker('refresh');
-        
-        // Reload audit reports
-        loadAuditReports(1);
-    });
-
-    // Initial load
-    $(document).ready(function() {
-        loadAuditReports(1);
-    });
 </script>
 @endpush
 
