@@ -245,7 +245,7 @@ class AuditController extends AccountBaseController
      */
     public function complete($id)
     {
-        $audit = Audit::with(['responses.checkpoint', 'responses.files', 'auditor', 'auditee', 'template', 'department'])
+        $audit = Audit::with(['responses.checkpoint', 'responses.files', 'auditor', 'auditee', 'auditee.employeeDetail.reportingTo', 'template', 'department'])
             ->findOrFail($id);
 
         abort_403($audit->auditor_id != user()->id);
@@ -307,12 +307,15 @@ class AuditController extends AccountBaseController
                 $audit->auditee->notify(new AuditCompleted($audit));
             }
 
+            // Notify auditor
+            if ($setting->send_result_to_auditor && $audit->auditor) {
+                $audit->auditor->notify(new AuditCompleted($audit));
+            }
+
             // Notify department manager (could be extended to find actual managers)
             if ($setting->send_result_to_manager) {
-                // Get admins or department managers
-                $admins = User::allAdmins(company()->id);
-                foreach ($admins as $admin) {
-                    $admin->notify(new AuditCompleted($audit));
+                if ($audit->auditee->employeeDetail->reportingTo) {
+                    $audit->auditee->employeeDetail->reportingTo->notify(new AuditCompleted($audit));
                 }
             }
         }

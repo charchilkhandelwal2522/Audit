@@ -12,9 +12,9 @@ class AuditSettingController extends AccountBaseController
     public function __construct()
     {
         parent::__construct();
+        $this->pageTitle = __('audit::app.auditSettings');
         $this->middleware(function ($request, $next) {
             abort_403(!in_array(AuditSetting::MODULE_NAME, $this->user->modules));
-            $this->pageTitle = __('audit::app.auditSettings');
 
             return $next($request);
         });
@@ -28,6 +28,8 @@ class AuditSettingController extends AccountBaseController
         $this->managePermission = user()->permission('manage_audit_settings');
         abort_403($this->managePermission != 'all');
 
+        $this->activeSettingMenu = 'audit_settings';
+
         $this->setting = AuditSetting::where('company_id', company()->id)->first();
 
         if (!$this->setting) {
@@ -37,6 +39,7 @@ class AuditSettingController extends AccountBaseController
                 'score_threshold_alert' => 70,
                 'send_result_to_manager' => true,
                 'send_result_to_auditee' => true,
+                'send_result_to_auditor' => true,
                 'generate_pdf_report' => true,
             ]);
         }
@@ -68,6 +71,7 @@ class AuditSettingController extends AccountBaseController
         $setting->score_threshold_alert = $request->score_threshold_alert;
         $setting->send_result_to_manager = $request->has('send_result_to_manager');
         $setting->send_result_to_auditee = $request->has('send_result_to_auditee');
+        $setting->send_result_to_auditor = $request->has('send_result_to_auditor');
         $setting->generate_pdf_report = $request->has('generate_pdf_report');
         $setting->save();
 

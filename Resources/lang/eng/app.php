@@ -174,6 +174,7 @@ return [
     'scoreThresholdAlertHelp' => 'Send alerts when score is below this threshold.',
     'sendResultToManager' => 'Send results to department manager',
     'sendResultToAuditee' => 'Send results to person being audited',
+    'sendResultToAuditor' => 'Send results to auditor',
     'generatePdfReport' => 'Generate PDF report automatically',
 
     // My Audits
@@ -201,6 +202,7 @@ return [
         'auditCompletedLine2' => 'Department: :department',
         'auditCompletedLine3' => 'Auditor: :auditor',
         'auditCompletedLine4' => 'Duration: :duration',
+        'auditCompletedLine5' => 'Auditee: :auditee',
         'viewAuditDetails' => 'View Audit Details',
     ],
 
@@ -238,7 +240,7 @@ return [
     'clear' => 'Clear',
     'apply' => 'Apply',
     'summaryReports' => 'Summary Reports',
-    
+
     // Reports Page
     'auditReports' => 'Audit Reports',
     'auditReport' => 'Audit Report',
@@ -247,11 +249,11 @@ return [
     'highScore' => 'High Score',
     'mediumScore' => 'Medium Score',
     'lowScore' => 'Low Score',
-    
+
     // Dashboard Stats
     'auditsInProgress' => 'Audits In Progress',
     'failedAudits' => 'Failed Audits',
-    
+
     // Audit History
     'auditId' => 'Audit ID',
     'allStatuses' => 'All Statuses',

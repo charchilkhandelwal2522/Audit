@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('score_threshold_alert')->default(70)->comment('Minimum score threshold for alerts');
             $table->boolean('send_result_to_manager')->default(true);
             $table->boolean('send_result_to_auditee')->default(true);
+            $table->boolean('send_result_to_auditor')->default(true);
             $table->boolean('generate_pdf_report')->default(true);
             $table->timestamps();
         });

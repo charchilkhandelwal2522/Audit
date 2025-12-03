@@ -20,6 +20,7 @@ class AuditSetting extends BaseModel
         'score_threshold_alert',
         'send_result_to_manager',
         'send_result_to_auditee',
+        'send_result_to_auditor',
         'generate_pdf_report',
     ];
 
@@ -28,6 +29,7 @@ class AuditSetting extends BaseModel
         'score_threshold_alert' => 'integer',
         'send_result_to_manager' => 'boolean',
         'send_result_to_auditee' => 'boolean',
+        'send_result_to_auditor' => 'boolean',
         'generate_pdf_report' => 'boolean',
     ];
 
@@ -49,6 +51,7 @@ class AuditSetting extends BaseModel
                 'score_threshold_alert' => 70,
                 'send_result_to_manager' => true,
                 'send_result_to_auditee' => true,
+                'send_result_to_auditor' => true,
                 'generate_pdf_report' => true,
             ]
         );

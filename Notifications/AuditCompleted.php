@@ -56,6 +56,9 @@ class AuditCompleted extends Notification
             ->line(__('audit::app.notifications.auditCompletedLine3', [
                 'auditor' => $this->audit->auditor?->name ?? '--'
             ]))
+            ->line(__('audit::app.notifications.auditCompletedLine5', [
+                'auditee' => $this->audit->auditee?->name ?? '--'
+            ]))
             ->line(__('audit::app.notifications.auditCompletedLine4', [
                 'duration' => $this->audit->duration_formatted
             ]))

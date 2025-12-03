@@ -22,6 +22,7 @@ class CompanyCreatedListener
                 'score_threshold_alert' => 70,
                 'send_result_to_manager' => true,
                 'send_result_to_auditee' => true,
+                'send_result_to_auditor' => true,
                 'generate_pdf_report' => true,
             ]
         );

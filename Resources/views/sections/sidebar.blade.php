@@ -16,9 +16,6 @@
                 <x-sub-menu-item :link="route('audits.index')" :text="__('audit::app.allAudits')" />
             @endif
             <x-sub-menu-item :link="route('audits.my-audits')" :text="__('audit::app.myAudits')" />
-            @if(user()->permission('manage_audit_settings') == 'all')
-                <x-sub-menu-item :link="route('audit-settings.index')" :text="__('audit::app.auditSettings')" />
-            @endif
             @if(user()->permission('view_audit') != 'none' && user()->permission('view_audit') != 5)
                 <x-sub-menu-item :link="route('audit-reports.index')" :text="__('audit::app.summaryReports')" />
             @endif
