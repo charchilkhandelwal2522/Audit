@@ -212,14 +212,14 @@ class AuditDataTable extends BaseDataTable
             __('audit::app.department') => ['data' => 'department', 'name' => 'department.team_name', 'title' => __('audit::app.department')],
             __('audit::app.auditor') => ['data' => 'auditor', 'name' => 'auditor.name', 'title' => __('audit::app.auditor'), 'exportable' => false],
             __('audit::app.auditee') => ['data' => 'auditee', 'name' => 'auditee.name', 'title' => __('audit::app.auditee'), 'exportable' => false],
-            __('app.status') => ['data' => 'status', 'name' => 'status', 'title' => __('app.status')],
             __('audit::app.progress') => ['data' => 'progress', 'name' => 'progress', 'title' => __('audit::app.progress'), 'orderable' => false, 'searchable' => false],
             __('audit::app.score') => ['data' => 'score', 'name' => 'score', 'title' => __('audit::app.score')],
             __('audit::app.duration') => ['data' => 'duration', 'name' => 'duration_seconds', 'title' => __('audit::app.duration')],
-            __('audit::app.startedAt') => ['data' => 'started_at', 'name' => 'started_at', 'title' => __('audit::app.startedAt')],
-            __('audit::app.startedTime') => ['data' => 'started_time', 'name' => 'started_time', 'title' => __('audit::app.startedTime')],
-            __('audit::app.endedAt') => ['data' => 'ended_at', 'name' => 'ended_at', 'title' => __('audit::app.endedAt')],
-            __('audit::app.completedTime') => ['data' => 'completed_time', 'name' => 'completed_time', 'title' => __('audit::app.completedTime')],
+            // __('audit::app.startedAt') => ['data' => 'started_at', 'name' => 'started_at', 'title' => __('audit::app.startedAt')],
+            // __('audit::app.startedTime') => ['data' => 'started_time', 'name' => 'started_time', 'title' => __('audit::app.startedTime')],
+            // __('audit::app.endedAt') => ['data' => 'ended_at', 'name' => 'ended_at', 'title' => __('audit::app.endedAt')],
+            // __('audit::app.completedTime') => ['data' => 'completed_time', 'name' => 'completed_time', 'title' => __('audit::app.completedTime')],
+            __('app.status') => ['data' => 'status', 'name' => 'status', 'title' => __('app.status')],
             Column::computed('action', __('app.action'))
                 ->exportable(false)
                 ->printable(false)

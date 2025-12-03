@@ -329,6 +329,22 @@
 </style>
 
 <div class="audit-result-wrapper">
+    <!-- Threshold Alert -->
+    @if($audit->isBelowThreshold())
+        <div class="alert alert-warning alert-dismissible fade show" role="alert" style="margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+            <div class="d-flex align-items-center">
+                <i class="fa fa-exclamation-triangle mr-2" style="font-size: 20px;"></i>
+                <div>
+                    <strong>@lang('audit::app.thresholdAlert')</strong>
+                    <p class="mb-0">@lang('audit::app.scoreThresholdWarning') {{ $audit->getThresholdAlertMessage() }}</p>
+                </div>
+            </div>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
     <!-- Summary Card -->
     <div class="audit-summary-card">
     <!-- Header -->

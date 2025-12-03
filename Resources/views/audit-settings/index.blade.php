@@ -6,7 +6,7 @@
 
         <x-setting-sidebar :activeMenu="$activeSettingMenu"/>
 
-        <x-setting-card>
+        <x-setting-card method="POST">
             <x-slot name="header">
                 <div class="s-b-n-header" id="tabs">
                     <h2 class="mb-0 p-20 f-21 font-weight-normal border-bottom-grey">

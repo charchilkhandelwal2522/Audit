@@ -10,6 +10,7 @@ use App\Traits\HasCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Audit\Entities\AuditSetting;
 
 class Audit extends BaseModel
 {
@@ -272,6 +273,39 @@ class Audit extends BaseModel
         }
 
         return 'text-danger';
+    }
+
+    /**
+     * Check if score is below threshold alert.
+     */
+    public function isBelowThreshold(): bool
+    {
+        if ($this->status !== self::STATUS_COMPLETED) {
+            return false;
+        }
+
+        $setting = AuditSetting::where('company_id', $this->company_id)->first();
+        $threshold = $setting?->score_threshold_alert ?? 70;
+
+        return $this->score < $threshold;
+    }
+
+    /**
+     * Get the threshold alert message.
+     */
+    public function getThresholdAlertMessage(): ?string
+    {
+        if (!$this->isBelowThreshold()) {
+            return null;
+        }
+
+        $setting = AuditSetting::where('company_id', $this->company_id)->first();
+        $threshold = $setting?->score_threshold_alert ?? 70;
+
+        return __('audit::app.scoreBelowThreshold', [
+            'score' => $this->score,
+            'threshold' => $threshold
+        ]);
     }
 }
 
