@@ -13,36 +13,75 @@ use Carbon\Carbon;
 
 class AuditReportController extends AccountBaseController
 {
+    /**
+     * Apply permission-based filtering to audit query.
+     */
+    protected function applyPermissionFilter($query)
+    {
+        $viewPermission = user()->permission('view_audit');
+
+        if ($viewPermission == 'owned') {
+            $query->where(function ($q) {
+                $q->where('auditor_id', user()->id)
+                    ->orWhere('auditee_id', user()->id);
+            });
+        } elseif ($viewPermission == 'added') {
+            $query->where('added_by', user()->id);
+        } elseif ($viewPermission == 'both') {
+            $query->where(function ($q) {
+                $q->where('auditor_id', user()->id)
+                    ->orWhere('auditee_id', user()->id)
+                    ->orWhere('added_by', user()->id);
+            });
+        }
+        // 'all' permission doesn't need filtering
+
+        return $query;
+    }
+
     public function index()
     {
+        $this->viewPermission = user()->permission('view_audit');
+        abort_403($this->viewPermission == 'none');
+
         $this->pageTitle = __('audit::app.summaryReports');
 
+        // Get base query with permission filtering
+        $baseQuery = Audit::query();
+        $this->applyPermissionFilter($baseQuery);
+
         // Get completed audits for statistics
-        $completedAudits = Audit::where('status', Audit::STATUS_COMPLETED);
+        $completedAudits = clone $baseQuery;
+        $completedAudits->where('status', Audit::STATUS_COMPLETED);
 
         // Total audits count
-        $this->totalAudits = Audit::count();
+        $this->totalAudits = (clone $baseQuery)->count();
 
         // Average score
         $this->averageScore = round($completedAudits->avg('score') ?? 0, 0);
 
         // Audits passed (>85%)
-        $this->auditsPassed = Audit::where('status', Audit::STATUS_COMPLETED)
+        $passedQuery = clone $baseQuery;
+        $this->auditsPassed = $passedQuery->where('status', Audit::STATUS_COMPLETED)
             ->where('score', '>=', 85)
             ->count();
 
         // Audits failed (<60%)
-        $this->auditsFailed = Audit::where('status', Audit::STATUS_COMPLETED)
+        $failedQuery = clone $baseQuery;
+        $this->auditsFailed = $failedQuery->where('status', Audit::STATUS_COMPLETED)
             ->where('score', '<', 60)
             ->count();
 
         // Score distribution for chart
+        $scoreDistributionQuery = clone $baseQuery;
+        $scoreDistributionQuery->where('status', Audit::STATUS_COMPLETED);
+
         $this->scoreDistribution = [
-            '0-20' => Audit::where('status', Audit::STATUS_COMPLETED)->whereBetween('score', [0, 20])->count(),
-            '21-40' => Audit::where('status', Audit::STATUS_COMPLETED)->whereBetween('score', [21, 40])->count(),
-            '41-60' => Audit::where('status', Audit::STATUS_COMPLETED)->whereBetween('score', [41, 60])->count(),
-            '61-80' => Audit::where('status', Audit::STATUS_COMPLETED)->whereBetween('score', [61, 80])->count(),
-            '81-100' => Audit::where('status', Audit::STATUS_COMPLETED)->whereBetween('score', [81, 100])->count(),
+            '0-20' => (clone $scoreDistributionQuery)->whereBetween('score', [0, 20])->count(),
+            '21-40' => (clone $scoreDistributionQuery)->whereBetween('score', [21, 40])->count(),
+            '41-60' => (clone $scoreDistributionQuery)->whereBetween('score', [41, 60])->count(),
+            '61-80' => (clone $scoreDistributionQuery)->whereBetween('score', [61, 80])->count(),
+            '81-100' => (clone $scoreDistributionQuery)->whereBetween('score', [81, 100])->count(),
         ];
 
         // Performance by department
@@ -50,7 +89,8 @@ class AuditReportController extends AccountBaseController
         $departmentPerformance = [];
 
         foreach ($departments as $department) {
-            $avgScore = Audit::where('status', Audit::STATUS_COMPLETED)
+            $deptQuery = clone $baseQuery;
+            $avgScore = $deptQuery->where('status', Audit::STATUS_COMPLETED)
                 ->where('department_id', $department->id)
                 ->avg('score');
 
@@ -67,7 +107,8 @@ class AuditReportController extends AccountBaseController
             $date = now()->subMonths($i);
             $monthKey = $date->format('M');
 
-            $monthAudits = Audit::where('status', Audit::STATUS_COMPLETED)
+            $monthAudits = clone $baseQuery;
+            $monthAudits->where('status', Audit::STATUS_COMPLETED)
                 ->whereYear('completed_at', $date->year)
                 ->whereMonth('completed_at', $date->month);
 
@@ -92,10 +133,16 @@ class AuditReportController extends AccountBaseController
      */
     public function audits(Request $request)
     {
+        $viewPermission = user()->permission('view_audit');
+        abort_403($viewPermission == 'none');
+
         $perPage = $request->per_page ?? 4;
 
         $audits = Audit::with(['template', 'department', 'auditor', 'auditee'])
             ->where('status', Audit::STATUS_COMPLETED);
+
+        // Apply permission filtering
+        $this->applyPermissionFilter($audits);
 
         // Filter by department
         if ($request->department_id && $request->department_id != 'all') {
@@ -148,6 +195,9 @@ class AuditReportController extends AccountBaseController
      */
     public function export(Request $request)
     {
+        $viewPermission = user()->permission('view_audit');
+        abort_403($viewPermission == 'none');
+
         $departmentId = $request->department_id;
         $scoreRange = $request->score_range;
         $search = $request->search;
@@ -161,9 +211,9 @@ class AuditReportController extends AccountBaseController
 
         if ($request->format === 'excel') {
             $filename = 'audit-reports-' . now()->format('Y-m-d') . '.xlsx';
-            
+
             return Excel::download(
-                new AuditReportExport($departmentId, $scoreRange, $search, $startDate, $endDate),
+                new AuditReportExport($departmentId, $scoreRange, $search, $startDate, $endDate, $viewPermission),
                 $filename
             );
         }
@@ -172,6 +222,9 @@ class AuditReportController extends AccountBaseController
             // Build query with filters
             $audits = Audit::with(['template', 'department', 'auditor', 'auditee'])
                 ->where('status', Audit::STATUS_COMPLETED);
+
+            // Apply permission filtering
+            $this->applyPermissionFilter($audits);
 
             if ($departmentId && $departmentId != 'all') {
                 $audits->where('department_id', $departmentId);

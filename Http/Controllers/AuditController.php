@@ -76,7 +76,7 @@ class AuditController extends AccountBaseController
         abort_403(!in_array($this->addPermission, ['all', 'added']));
 
         $template = AuditTemplate::with('checkpoints')->findOrFail($request->audit_template_id);
-        
+
         $audit = new Audit();
         $audit->company_id = company()->id;
         $audit->audit_template_id = $request->audit_template_id;

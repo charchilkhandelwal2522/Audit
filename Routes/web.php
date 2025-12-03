@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Audit\Http\Controllers\AuditDashboard;
+use Modules\Audit\Http\Controllers\AuditDashboardController;
 use Modules\Audit\Http\Controllers\AuditController;
 use Modules\Audit\Http\Controllers\AuditTemplateController;
 use Modules\Audit\Http\Controllers\AuditSettingController;
@@ -23,9 +23,9 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     // Audit Dashboard
     Route::prefix('audit')->group(function () {
         // These routes must be BEFORE the resource route to avoid being matched as {audit-dashboard} param
-        Route::get('audit-dashboard/audits', [AuditDashboard::class, 'dashboardAudits'])->name('audit-dashboard.audits');
-        Route::get('audit-dashboard/export', [AuditDashboard::class, 'export'])->name('audit-dashboard.export');
-        Route::resource('audit-dashboard', AuditDashboard::class);
+        Route::get('audit-dashboard/audits', [AuditDashboardController::class, 'dashboardAudits'])->name('audit-dashboard.audits');
+        Route::get('audit-dashboard/export', [AuditDashboardController::class, 'export'])->name('audit-dashboard.export');
+        Route::resource('audit-dashboard', AuditDashboardController::class);
 
         // Audit Reports
         Route::resource('audit-reports', AuditReportController::class);

@@ -39,13 +39,28 @@ class AuditTemplateController extends AccountBaseController
         $this->totalTemplates = AuditTemplate::count();
         $this->activeTemplates = AuditTemplate::where('status', 'active')->count();
         // Count of unique departments that have at least one template
-        $this->departmentCount = AuditTemplate::distinct('department_id')->count('department_id');
+        $this->departmentCount = AuditTemplate::whereNotNull('department_id')
+            ->pluck('department_id')
+            ->unique()
+            ->count();
         // Get all templates with their checkpoints count and calculate the average
         $templates = AuditTemplate::withCount('checkpoints')->get();
         $totalTemplates = $templates->count();
         $totalCheckpoints = $templates->sum('checkpoints_count');
         $this->averageCheckpoints = $totalTemplates > 0 ? round($totalCheckpoints / $totalTemplates, 2) : 0;
 
+        if($this->viewPermission == 'added') {
+            $this->templates = AuditTemplate::where('added_by', user()->id)->withCount('checkpoints')->get();
+
+            $this->totalTemplates = $this->templates->count();
+            $this->activeTemplates = $this->templates->where('status', 'active')->count();
+
+            $this->departmentCount = $this->templates->pluck('department_id')->unique()->filter()->count();
+
+            $totalCheckpoints = $this->templates->sum('checkpoints_count');
+            $this->averageCheckpoints = $this->totalTemplates > 0 ? 
+            round($totalCheckpoints / $this->totalTemplates, 2) : 0;
+        }
         return $dataTable->render('audit::audit-templates.index', $this->data);
     }
 

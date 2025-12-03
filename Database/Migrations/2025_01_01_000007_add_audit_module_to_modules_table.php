@@ -31,14 +31,14 @@ return new class extends Migration
                 'display_name' => 'Edit Audit Template',
                 'module_id' => $module->id,
                 'is_custom' => 1,
-                'allowed_permissions' => Permission::ALL_4_ADDED_1_OWNED_2_BOTH_3_NONE_5,
+                'allowed_permissions' => Permission::ALL_4_ADDED_1_NONE_5,
             ],
             [
                 'name' => 'delete_audit_template',
                 'display_name' => 'Delete Audit Template',
                 'module_id' => $module->id,
                 'is_custom' => 1,
-                'allowed_permissions' => Permission::ALL_4_ADDED_1_OWNED_2_BOTH_3_NONE_5,
+                'allowed_permissions' => Permission::ALL_4_ADDED_1_NONE_5,
             ],
 
             // Audit Permissions

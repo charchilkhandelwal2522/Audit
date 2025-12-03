@@ -5,7 +5,7 @@
             <button class="btn-export" id="exportAuditHistory">
                 <i class="fa fa-file-export"></i> @lang('app.exportExcel')
             </button>
-            @if(user()->permission('add_audit') == 'all' || user()->permission('add_audit') == 'added')
+            @if(user()->permission('add_audit') == 'all')
                 <a href="{{ route('audits.create') }}" class="btn-new-audit openRightModal">
                     <i class="fa fa-plus"></i> @lang('audit::app.startNewAudit')
                 </a>
@@ -21,7 +21,7 @@
                         <i class="fa fa-search text-muted"></i>
                     </span>
                 </div>
-                <input type="text" class="form-control border" id="dashboard_search" 
+                <input type="text" class="form-control border" id="dashboard_search"
                     placeholder="@lang('audit::app.searchPlaceholder')" style="border-radius: 0 8px 8px 0;">
             </div>
         </div>

@@ -16,19 +16,38 @@ class AuditExport implements FromCollection, WithHeadings, WithMapping, WithStyl
     protected $search;
     protected $startDate;
     protected $endDate;
+    protected $viewPermission;
 
-    public function __construct($departmentId = null, $status = null, $search = null, $startDate = null, $endDate = null)
+    public function __construct($departmentId = null, $status = null, $search = null, $startDate = null, $endDate = null, $viewPermission = 'all')
     {
         $this->departmentId = $departmentId;
         $this->status = $status;
         $this->search = $search;
         $this->startDate = $startDate;
         $this->endDate = $endDate;
+        $this->viewPermission = $viewPermission;
     }
 
     public function collection()
     {
         $query = Audit::with(['template', 'department', 'auditor', 'auditee']);
+
+        // Apply permission filtering
+        if ($this->viewPermission == 'owned') {
+            $query->where(function ($q) {
+                $q->where('auditor_id', user()->id)
+                    ->orWhere('auditee_id', user()->id);
+            });
+        } elseif ($this->viewPermission == 'added') {
+            $query->where('added_by', user()->id);
+        } elseif ($this->viewPermission == 'both') {
+            $query->where(function ($q) {
+                $q->where('auditor_id', user()->id)
+                    ->orWhere('auditee_id', user()->id)
+                    ->orWhere('added_by', user()->id);
+            });
+        }
+        // 'all' permission doesn't need filtering
 
         if ($this->departmentId && $this->departmentId != 'all') {
             $query->where('department_id', $this->departmentId);
