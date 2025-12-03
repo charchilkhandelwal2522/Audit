@@ -33,9 +33,9 @@ class StoreAuditRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'audit_template_id.required' => __('audit::app.validation.templateRequired'),
-            'department_id.required' => __('audit::app.validation.departmentRequired'),
-            'auditee_id.required' => __('audit::app.validation.auditeeRequired'),
+            'audit_template_id.required' => __('audit::validation.templateRequired'),
+            'department_id.required' => __('audit::validation.departmentRequired'),
+            'auditee_id.required' => __('audit::validation.auditeeRequired'),
         ];
     }
 }

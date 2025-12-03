@@ -174,35 +174,11 @@ return [
     'scoreThresholdAlertHelp' => 'Send alerts when score is below this threshold.',
     'sendResultToManager' => 'Send results to department manager',
     'sendResultToAuditee' => 'Send results to person being audited',
+    'sendResultToAuditor' => 'Send results to auditor',
     'generatePdfReport' => 'Generate PDF report automatically',
 
     // My Audits
     'myAuditsInfo' => 'This page shows all audits where you are the person being audited.',
-
-    // Validation Messages
-    'validation' => [
-        'titleRequired' => 'Template title is required.',
-        'departmentRequired' => 'Please select a department.',
-        'checkpointsRequired' => 'At least one checkpoint is required.',
-        'checkpointsMin' => 'At least one checkpoint is required.',
-        'checkpointTitleRequired' => 'Checkpoint title is required.',
-        'templateRequired' => 'Please select an audit template.',
-        'auditeeRequired' => 'Please select a person to audit.',
-        'statusRequired' => 'Status is required.',
-        'statusInvalid' => 'Invalid status selected.',
-        'fileTooLarge' => 'File size must not exceed 10MB.',
-    ],
-
-    // Notifications
-    'notifications' => [
-        'auditCompleted' => 'Audit Completed',
-        'auditCompletedSubject' => 'Audit Completed - :template',
-        'auditCompletedLine1' => 'An audit has been completed with a score of :score%.',
-        'auditCompletedLine2' => 'Department: :department',
-        'auditCompletedLine3' => 'Auditor: :auditor',
-        'auditCompletedLine4' => 'Duration: :duration',
-        'viewAuditDetails' => 'View Audit Details',
-    ],
 
     'of' => 'of',
     'startedTime' => 'Started Time',
@@ -238,23 +214,30 @@ return [
     'clear' => 'Clear',
     'apply' => 'Apply',
     'summaryReports' => 'Summary Reports',
-    
+
     // Reports Page
     'auditReports' => 'Audit Reports',
+    'auditReport' => 'Audit Report',
     'searchByAuditee' => 'Search by auditee...',
     'allScores' => 'All Scores',
     'highScore' => 'High Score',
     'mediumScore' => 'Medium Score',
     'lowScore' => 'Low Score',
-    
+
     // Dashboard Stats
     'auditsInProgress' => 'Audits In Progress',
     'failedAudits' => 'Failed Audits',
-    
+
     // Audit History
     'auditId' => 'Audit ID',
     'allStatuses' => 'All Statuses',
     'searchPlaceholder' => 'Search by ID, Auditee, Auditor...',
     'failed' => 'Failed',
+
+    'auditInformation' => 'Audit Information',
+    'scoreSummary' => 'Score Summary',
+    'totalCheckpoints' => 'Total Checkpoints',
+    'generatedOn' => 'Generated On',
+    'checkpointDetails' => 'Checkpoint Details',
 ];
 

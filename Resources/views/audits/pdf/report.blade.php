@@ -89,6 +89,48 @@
             padding: 3px 8px;
             border-radius: 3px;
         }
+        .file-list {
+            margin-top: 8px;
+            font-size: 10px;
+        }
+        .file-item {
+            margin-bottom: 6px;
+            padding: 6px;
+            background-color: #f8f9fa;
+            border-left: 3px solid #007bff;
+            page-break-inside: avoid;
+        }
+        .file-item-image {
+            display: block;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .file-item-image img {
+            max-width: 120px;
+            max-height: 120px;
+            border: 1px solid #dee2e6;
+            padding: 3px;
+            background-color: #fff;
+        }
+        .file-item-image small {
+            display: block;
+            margin-top: 3px;
+            color: #6c757d;
+            word-break: break-word;
+        }
+        .file-link {
+            color: #007bff;
+            text-decoration: underline;
+            word-break: break-all;
+        }
+        .file-icon {
+            margin-right: 4px;
+            color: #6c757d;
+        }
+        .file-size {
+            color: #6c757d;
+            font-size: 9px;
+        }
         .summary-box {
             background-color: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -181,9 +223,10 @@
         <thead>
             <tr>
                 <th width="5%">#</th>
-                <th width="30%">@lang('audit::app.checkpoint')</th>
-                <th width="15%">@lang('app.status')</th>
-                <th width="50%">@lang('app.notes')</th>
+                <th width="25%">@lang('audit::app.checkpoint')</th>
+                <th width="12%">@lang('app.status')</th>
+                <th width="28%">@lang('app.notes')</th>
+                <th width="30%">@lang('audit::app.files')</th>
             </tr>
         </thead>
         <tbody>
@@ -206,6 +249,30 @@
                     @endif
                 </td>
                 <td>{{ $response->notes ?: '--' }}</td>
+                <td>
+                    @if($response->files && $response->files->count() > 0)
+                        <div class="file-list">
+                            @foreach($response->files as $file)
+                                @if($file->isImage())
+                                    <div class="file-item-image">
+                                        <img src="{{ $file->file_url }}" alt="{{ $file->filename }}" />
+                                        <small>{{ $file->filename }}</small>
+                                    </div>
+                                @else
+                                    <div class="file-item">
+                                        <span class="file-icon">📎</span>
+                                        <a href="{{ $file->file_url }}" class="file-link" target="_blank">
+                                            {{ $file->filename }}
+                                        </a>
+                                        <span class="file-size">({{ $file->formatted_size }})</span>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @else
+                        <span style="color: #6c757d;">--</span>
+                    @endif
+                </td>
             </tr>
             @endforeach
         </tbody>

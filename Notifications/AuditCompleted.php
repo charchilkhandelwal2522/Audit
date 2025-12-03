@@ -43,26 +43,26 @@ class AuditCompleted extends Notification
         $url = route('audits.show', $this->audit->id);
 
         return (new MailMessage)
-            ->subject(__('audit::app.notifications.auditCompletedSubject', [
+            ->subject(__('audit::email.auditCompleted.subject', [
                 'template' => $this->audit->template->title
             ]))
             ->greeting(__('email.hello') . ' ' . $notifiable->name . '!')
-            ->line(__('audit::app.notifications.auditCompletedLine1', [
+            ->line(__('audit::email.auditCompleted.line1', [
                 'score' => $this->audit->score
             ]))
-            ->line(__('audit::app.notifications.auditCompletedLine2', [
+            ->line(__('audit::email.auditCompleted.line2', [
                 'department' => $this->audit->department?->team_name ?? '--'
             ]))
-            ->line(__('audit::app.notifications.auditCompletedLine3', [
+            ->line(__('audit::email.auditCompleted.line3', [
                 'auditor' => $this->audit->auditor?->name ?? '--'
             ]))
-            ->line(__('audit::app.notifications.auditCompletedLine5', [
+            ->line(__('audit::email.auditCompleted.line5', [
                 'auditee' => $this->audit->auditee?->name ?? '--'
             ]))
-            ->line(__('audit::app.notifications.auditCompletedLine4', [
+            ->line(__('audit::email.auditCompleted.line4', [
                 'duration' => $this->audit->duration_formatted
             ]))
-            ->action(__('audit::app.notifications.viewAuditDetails'), $url);
+            ->action(__('audit::email.auditCompleted.actionButton'), $url);
     }
 
     /**

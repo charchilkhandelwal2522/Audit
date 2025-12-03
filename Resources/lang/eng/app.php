@@ -180,32 +180,6 @@ return [
     // My Audits
     'myAuditsInfo' => 'This page shows all audits where you are the person being audited.',
 
-    // Validation Messages
-    'validation' => [
-        'titleRequired' => 'Template title is required.',
-        'departmentRequired' => 'Please select a department.',
-        'checkpointsRequired' => 'At least one checkpoint is required.',
-        'checkpointsMin' => 'At least one checkpoint is required.',
-        'checkpointTitleRequired' => 'Checkpoint title is required.',
-        'templateRequired' => 'Please select an audit template.',
-        'auditeeRequired' => 'Please select a person to audit.',
-        'statusRequired' => 'Status is required.',
-        'statusInvalid' => 'Invalid status selected.',
-        'fileTooLarge' => 'File size must not exceed 10MB.',
-    ],
-
-    // Notifications
-    'notifications' => [
-        'auditCompleted' => 'Audit Completed',
-        'auditCompletedSubject' => 'Audit Completed - :template',
-        'auditCompletedLine1' => 'An audit has been completed with a score of :score%.',
-        'auditCompletedLine2' => 'Department: :department',
-        'auditCompletedLine3' => 'Auditor: :auditor',
-        'auditCompletedLine4' => 'Duration: :duration',
-        'auditCompletedLine5' => 'Auditee: :auditee',
-        'viewAuditDetails' => 'View Audit Details',
-    ],
-
     'of' => 'of',
     'startedTime' => 'Started Time',
     'completedTime' => 'Completed Time',

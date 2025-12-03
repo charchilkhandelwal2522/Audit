@@ -36,11 +36,11 @@ class StoreAuditTemplateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'title.required' => __('audit::app.validation.titleRequired'),
-            'department_id.required' => __('audit::app.validation.departmentRequired'),
-            'checkpoints.required' => __('audit::app.validation.checkpointsRequired'),
-            'checkpoints.min' => __('audit::app.validation.checkpointsMin'),
-            'checkpoints.*.title.required' => __('audit::app.validation.checkpointTitleRequired'),
+            'title.required' => __('audit::validation.titleRequired'),
+            'department_id.required' => __('audit::validation.departmentRequired'),
+            'checkpoints.required' => __('audit::validation.checkpointsRequired'),
+            'checkpoints.min' => __('audit::validation.checkpointsMin'),
+            'checkpoints.*.title.required' => __('audit::validation.checkpointTitleRequired'),
         ];
     }
 }

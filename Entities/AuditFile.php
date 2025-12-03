@@ -36,7 +36,7 @@ class AuditFile extends BaseModel
         'updated_at',
     ];
 
-    protected $appends = ['file_url', 'icon'];
+    protected $appends = ['file_url', 'icon', 'formatted_size'];
 
     /**
      * Get the audit this file belongs to.

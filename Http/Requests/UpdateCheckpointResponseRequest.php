@@ -33,9 +33,9 @@ class UpdateCheckpointResponseRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'status.required' => __('audit::app.validation.statusRequired'),
-            'status.in' => __('audit::app.validation.statusInvalid'),
-            'files.*.max' => __('audit::app.validation.fileTooLarge'),
+            'status.required' => __('audit::validation.statusRequired'),
+            'status.in' => __('audit::validation.statusInvalid'),
+            'files.*.max' => __('audit::validation.fileTooLarge'),
         ];
     }
 }
