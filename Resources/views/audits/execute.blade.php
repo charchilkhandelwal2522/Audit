@@ -545,7 +545,8 @@
                         <button type="button" class="nav-btn prev" id="prev-step" style="display: none;">
                             <i class="fa fa-arrow-left"></i> @lang('audit::app.previousStep')
                         </button>
-                        <button type="button" class="nav-btn next" id="next-step">
+                        <button type="button" class="nav-btn next" id="next-step"
+                            @if($audit->responses->count() == 1) style="display: none;" @endif>
                             @lang('audit::app.nextStep') <i class="fa fa-arrow-right"></i>
                         </button>
                     </div>

@@ -292,7 +292,7 @@ class AuditController extends AccountBaseController
         }
 
         if (!empty($missingRequirements)) {
-            return Reply::error(implode('<br>', $missingRequirements));
+            return Reply::error(implode(", \n", $missingRequirements));
         }
 
         // Complete the audit

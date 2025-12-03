@@ -23,21 +23,25 @@
                         </h5>
                         <div class="row">
                             <div class="col-md-6">
-                                <x-forms.label class="my-3" fieldId="department_id" :fieldLabel="__('app.department')">
-                                </x-forms.label>
-                                <select class="form-control select-picker" name="department_id" id="department_id" data-live-search="true">
-                                    <option value="">@lang('audit::app.chooseDepartment')</option>
-                                    @foreach ($departments as $department)
-                                        <option value="{{ $department->id }}">{{ $department->team_name }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="form-group">
+                                    <x-forms.label class="my-3" fieldId="department_id" :fieldLabel="__('app.department')">
+                                    </x-forms.label>
+                                    <select class="form-control select-picker" name="department_id" id="department_id" data-live-search="true">
+                                        <option value="">@lang('audit::app.chooseDepartment')</option>
+                                        @foreach ($departments as $department)
+                                            <option value="{{ $department->id }}">{{ $department->team_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <x-forms.label class="my-3" fieldId="auditee_id" :fieldLabel="__('audit::app.personResponsible')">
-                                </x-forms.label>
-                                <select class="form-control select-picker" name="auditee_id" id="auditee_id" data-live-search="true" disabled>
-                                    <option value="">@lang('audit::app.choosePerson')</option>
-                                </select>
+                                <div class="form-group">
+                                    <x-forms.label class="my-3" fieldId="auditee_id" :fieldLabel="__('audit::app.personResponsible')">
+                                    </x-forms.label>
+                                    <select class="form-control select-picker" name="auditee_id" id="auditee_id" data-live-search="true" disabled>
+                                        <option value="">@lang('audit::app.choosePerson')</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -50,10 +54,12 @@
                         </h5>
                         <p class="text-muted f-13 mb-3" id="template-placeholder-text">@lang('audit::app.availableTemplatesInfo')</p>
 
-                        <input type="hidden" name="audit_template_id" id="audit_template_id" value="">
+                        <div class="form-group">
+                            <input type="hidden" name="audit_template_id" id="audit_template_id" value="">
 
-                        <div class="row" id="templates-container">
-                            <!-- Template cards will be loaded here -->
+                            <div class="row" id="templates-container">
+                                <!-- Template cards will be loaded here -->
+                            </div>
                         </div>
                     </div>
 
