@@ -131,9 +131,9 @@
                                                 <div class="mr-4">
                                                     <x-forms.checkbox fieldId="checkpoints[{{ $loop->index }}][requires_notes]" :fieldLabel="__('audit::app.requiresNotes')" fieldName="checkpoints[{{ $loop->index }}][requires_notes]" :checked="$checkpoint->requires_notes" />
                                                 </div>
-                                                <div>
+                                                {{-- <div>
                                                     <x-forms.checkbox fieldId="checkpoints[{{ $loop->index }}][is_mandatory]" :fieldLabel="__('audit::app.mandatory')" fieldName="checkpoints[{{ $loop->index }}][is_mandatory]" :checked="$checkpoint->is_mandatory" />
-                                                </div>
+                                                </div> --}}
                                             </div>
                                         </div>
                                     </div>
@@ -198,9 +198,9 @@
                             <div class="mr-4">
                                 <x-forms.checkbox fieldId="checkpoints[__INDEX__][requires_notes]" :fieldLabel="__('audit::app.requiresNotes')" fieldName="checkpoints[__INDEX__][requires_notes]" />
                             </div>
-                            <div>
+                            {{-- <div>
                                 <x-forms.checkbox fieldId="checkpoints[__INDEX__][is_mandatory]" :fieldLabel="__('audit::app.mandatory')" fieldName="checkpoints[__INDEX__][is_mandatory]" checked="true" />
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
