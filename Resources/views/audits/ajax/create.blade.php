@@ -142,7 +142,7 @@
 <script>
 $(document).ready(function() {
     // Department change - load templates and employees
-    $('#department_id').on('change', function() {
+    $(document).on('change', '#department_id', function () {
         const departmentId = $(this).val();
 
         if (departmentId) {

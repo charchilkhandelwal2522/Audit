@@ -6,6 +6,7 @@ use App\Helper\Reply;
 use App\Http\Controllers\AccountBaseController;
 use Illuminate\Http\Request;
 use Modules\Audit\Entities\AuditSetting;
+use Modules\Audit\Http\Requests\UpdateAuditSettingRequest;
 
 class AuditSettingController extends AccountBaseController
 {
@@ -50,15 +51,10 @@ class AuditSettingController extends AccountBaseController
     /**
      * Update the settings.
      */
-    public function update(Request $request)
+    public function update(UpdateAuditSettingRequest $request)
     {
         $this->managePermission = user()->permission('manage_audit_settings');
         abort_403($this->managePermission != 'all');
-
-        $request->validate([
-            'partial_completion_weight' => 'required|numeric|min:0|max:1',
-            'score_threshold_alert' => 'required|integer|min:0|max:100',
-        ]);
 
         $setting = AuditSetting::where('company_id', company()->id)->first();
 

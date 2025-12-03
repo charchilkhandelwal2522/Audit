@@ -37,7 +37,8 @@
                         </x-forms.number>
                     </div>
 
-                    <div class="col-md-6">
+                    <!-- To-Do: Add score threshold alert -->
+                    {{-- <div class="col-md-6">
                         <x-forms.number fieldId="score_threshold_alert"
                             :fieldLabel="__('audit::app.scoreThresholdAlert')"
                             fieldName="score_threshold_alert"
@@ -47,7 +48,7 @@
                             fieldMax="100"
                             :fieldHelp="__('audit::app.scoreThresholdAlertHelp')">
                         </x-forms.number>
-                    </div>
+                    </div> --}}
 
                     <!-- Notification Settings -->
                     <div class="col-md-12 mt-4">
@@ -77,12 +78,13 @@
                             :checked="$setting->send_result_to_auditor" />
                     </div>
 
-                    <div class="col-md-4">
+                    <!-- To-Do: Add generate PDF report -->
+                    {{-- <div class="col-md-4">
                         <x-forms.checkbox fieldId="generate_pdf_report"
                             :fieldLabel="__('audit::app.generatePdfReport')"
                             fieldName="generate_pdf_report"
                             :checked="$setting->generate_pdf_report" />
-                    </div>
+                    </div> --}}
                 </div>
             </div>
 

@@ -172,7 +172,7 @@ return [
     'partialCompletionWeightHelp' => 'Weight for partially completed items (0-1). Default is 0.5 (50%).',
     'scoreThresholdAlert' => 'Score Threshold Alert',
     'scoreThresholdAlertHelp' => 'Send alerts when score is below this threshold.',
-    'scoreBelowThreshold' => 'Score ({score}%) is below the threshold of {threshold}%.',
+    'scoreBelowThreshold' => 'Score :score% is below the threshold of :threshold%.',
     'thresholdAlert' => 'Threshold Alert',
     'scoreThresholdWarning' => 'This audit score is below the configured threshold.',
     'auditsBelowThreshold' => 'Audits Below Threshold',
