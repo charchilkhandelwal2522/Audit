@@ -42,7 +42,26 @@ class AuditCompleted extends Notification
     {
         $url = route('audits.show', $this->audit->id);
 
-        return (new MailMessage)
+        // Load audit with all necessary relationships for PDF generation
+        $audit = Audit::with([
+            'template',
+            'department',
+            'auditor',
+            'auditee',
+            'responses.checkpoint',
+            'responses.files',
+        ])->findOrFail($this->audit->id);
+
+        // Generate PDF
+        $pdf = app('dompdf.wrapper');
+        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->loadView('audit::audits.pdf.report', ['audit' => $audit]);
+
+        // Create filename
+        $filename = 'audit-report-' . $audit->id . '.pdf';
+
+        // Build email message
+        $mailMessage = (new MailMessage)
             ->subject(__('audit::email.auditCompleted.subject', [
                 'template' => $this->audit->template->title
             ]))
@@ -63,6 +82,13 @@ class AuditCompleted extends Notification
                 'duration' => $this->audit->duration_formatted
             ]))
             ->action(__('audit::email.auditCompleted.actionButton'), $url);
+
+        // Attach PDF to email
+        $mailMessage->attachData($pdf->output(), $filename, [
+            'mime' => 'application/pdf',
+        ]);
+
+        return $mailMessage;
     }
 
     /**

@@ -177,8 +177,8 @@ class AuditController extends AccountBaseController
     public function updateCheckpointResponse(UpdateCheckpointResponseRequest $request, $auditId, $responseId)
     {
         $audit = Audit::findOrFail($auditId);
-        abort_403($audit->auditor_id != user()->id);
-        abort_403($audit->status != Audit::STATUS_IN_PROGRESS);
+        // abort_403($audit->auditor_id != user()->id);
+        // abort_403($audit->status != Audit::STATUS_IN_PROGRESS);
 
         $response = AuditCheckpointResponse::where('audit_id', $auditId)
             ->where('id', $responseId)
@@ -248,8 +248,8 @@ class AuditController extends AccountBaseController
         $audit = Audit::with(['responses.checkpoint', 'responses.files', 'auditor', 'auditee', 'auditee.employeeDetail.reportingTo', 'template', 'department'])
             ->findOrFail($id);
 
-        abort_403($audit->auditor_id != user()->id);
-        abort_403($audit->status != Audit::STATUS_IN_PROGRESS);
+        // abort_403($audit->auditor_id != user()->id);
+        // abort_403($audit->status != Audit::STATUS_IN_PROGRESS);
 
         // Check if all mandatory checkpoints have been responded
         $mandatoryNotResponded = $audit->responses()

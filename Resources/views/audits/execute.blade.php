@@ -840,8 +840,6 @@ $(document).ready(function() {
                     fileInput.value = '';
                 }
 
-                console.error('Upload error:', error);
-                console.error('Response:', xhr.responseText);
                 Swal.fire({
                     icon: 'error',
                     title: '@lang("audit::app.uploadError")',

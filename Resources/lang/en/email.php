@@ -13,4 +13,4 @@ return [
         'line5' => 'Auditee: :auditee',
         'actionButton' => 'View Audit Details',
     ],
-]
+];
