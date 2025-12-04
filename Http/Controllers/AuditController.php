@@ -298,28 +298,6 @@ class AuditController extends AccountBaseController
         // Complete the audit
         $audit->complete();
 
-        // Send notifications (queued for async processing)
-        $setting = AuditSetting::where('company_id', company()->id)->first();
-
-        if ($setting) {
-            // Notify auditee
-            if ($setting->send_result_to_auditee && $audit->auditee) {
-                $audit->auditee->notify(new AuditCompleted($audit));
-            }
-
-            // Notify auditor
-            if ($setting->send_result_to_auditor && $audit->auditor) {
-                $audit->auditor->notify(new AuditCompleted($audit));
-            }
-
-            // Notify department manager
-            if ($setting->send_result_to_manager) {
-                if ($audit->auditee && $audit->auditee?->employeeDetail && $audit->auditee?->employeeDetail?->reportingTo) {
-                    $audit->auditee?->employeeDetail?->reportingTo->notify(new AuditCompleted($audit));
-                }
-            }
-        }
-
         return Reply::successWithData(__('audit::app.auditCompleted'), [
             'redirectUrl' => route('audits.show', $audit->id)
         ]);
