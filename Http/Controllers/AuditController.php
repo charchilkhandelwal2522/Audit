@@ -303,6 +303,7 @@ class AuditController extends AccountBaseController
         info($setting);
 
         if ($setting) {
+            info('coming...');
             // Notify auditee
             if ($setting->send_result_to_auditee && $audit->auditee) {
                 info('Mail send to Auditee');
@@ -324,6 +325,7 @@ class AuditController extends AccountBaseController
                 }
             }
         }
+        info('out');
 
         return Reply::successWithData(__('audit::app.auditCompleted'), [
             'redirectUrl' => route('audits.show', $audit->id)
