@@ -128,6 +128,12 @@
     color: #6c757d;
     margin-bottom: 10px;
     line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 3.6em; /* Approximately 3 lines with line-height 1.4 */
 }
 .template-card .template-meta {
     display: flex;
@@ -166,6 +172,13 @@ $(document).ready(function() {
         }
     });
 
+    function truncateText(text, maxLength) {
+        if (!text || text.length <= maxLength) {
+            return text || '@lang("audit::app.noDescription")';
+        }
+        return text.substring(0, maxLength).trim() + '...';
+    }
+
     function loadTemplates(departmentId) {
         const url = "{{ route('audit-templates.by-department', ':id') }}".replace(':id', departmentId);
 
@@ -184,6 +197,8 @@ $(document).ready(function() {
                         const bgColor = colors[index % colors.length];
                         const icon = icons[index % icons.length];
                         const checkpointCount = template.checkpoints_count || 0;
+                        // Truncate description to approximately 150 characters (roughly 15-20 words or 3 lines)
+                        const truncatedDesc = truncateText(template.description, 150);
 
                         html += `
                             <div class="col-md-6 mb-3">
@@ -194,7 +209,7 @@ $(document).ready(function() {
                                         </div>
                                         <div class="flex-grow-1">
                                             <div class="template-title">${template.title}</div>
-                                            <div class="template-desc">${template.description || '@lang("audit::app.noDescription")'}</div>
+                                            <div class="template-desc" title="${template.description || ''}">${truncatedDesc}</div>
                                             <div class="template-meta">
                                                 <span class="checkpoint-badge">
                                                     <i class="fa fa-list-check mr-1"></i> ${checkpointCount} @lang('audit::app.checkpoints')
