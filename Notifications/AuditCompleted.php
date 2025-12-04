@@ -2,35 +2,36 @@
 
 namespace Modules\Audit\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
+use App\Notifications\BaseNotification;
 use Modules\Audit\Entities\Audit;
 
-class AuditCompleted extends Notification implements ShouldQueue
+class AuditCompleted extends BaseNotification
 {
-    use Queueable;
-
-    protected Audit $audit;
 
     /**
      * Create a new notification instance.
+     *
+     * @return void
      */
-    public function __construct(Audit $audit)
+    private $audit;
+
+    public function __construct($audit)
     {
         $this->audit = $audit;
     }
 
     /**
      * Get the notification's delivery channels.
+     *
+     * @param mixed $notifiable
+     * @return array
      */
-    public function via($notifiable): array
+    public function via($notifiable)
     {
         $via = ['database'];
 
         if ($notifiable->email_notifications) {
-            $via[] = 'mail';
+            array_push($via, 'mail');
         }
 
         return $via;
@@ -38,10 +39,16 @@ class AuditCompleted extends Notification implements ShouldQueue
 
     /**
      * Get the mail representation of the notification.
+     *
+     * @param mixed $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable): MailMessage
+    public function toMail($notifiable)
     {
+        $auditMail = parent::build($notifiable);
+        $company = company();
         $url = route('audits.show', $this->audit->id);
+        $url = getDomainSpecificUrl($url, $company->id);
 
         // Load audit with all necessary relationships for PDF generation
         $audit = Audit::with([
@@ -61,41 +68,33 @@ class AuditCompleted extends Notification implements ShouldQueue
         // Create filename
         $filename = 'audit-report-' . $audit->id . '.pdf';
 
-        // Build email message
-        $mailMessage = (new MailMessage)
-            ->subject(__('audit::email.auditCompleted.subject', [
-                'template' => $this->audit->template->title
-            ]))
-            ->greeting(__('email.hello') . ' ' . $notifiable->name . '!')
-            ->line(__('audit::email.auditCompleted.line1', [
-                'score' => $this->audit->score
-            ]))
-            ->line(__('audit::email.auditCompleted.line2', [
-                'department' => $this->audit->department?->team_name ?? '--'
-            ]))
-            ->line(__('audit::email.auditCompleted.line3', [
-                'auditor' => $this->audit->auditor?->name ?? '--'
-            ]))
-            ->line(__('audit::email.auditCompleted.line5', [
-                'auditee' => $this->audit->auditee?->name ?? '--'
-            ]))
-            ->line(__('audit::email.auditCompleted.line4', [
-                'duration' => $this->audit->duration_formatted
-            ]))
-            ->action(__('audit::email.auditCompleted.actionButton'), $url);
+        $content = __('audit::email.auditCompleted.line1', ['score' => $audit->score]) . '<br><br>';
+        $content .= __('audit::email.auditCompleted.line2', ['department' => $audit->department?->team_name ?? '--']) . '<br>';
+        $content .= __('audit::email.auditCompleted.line3', ['auditor' => $audit->auditor?->name ?? '--']) . '<br>';
+        $content .= __('audit::email.auditCompleted.line5', ['auditee' => $audit->auditee?->name ?? '--']) . '<br>';
+        $content .= __('audit::email.auditCompleted.line4', ['duration' => $audit->duration_formatted ?? '--']) . '<br>';
 
-        // Attach PDF to email
-        $mailMessage->attachData($pdf->output(), $filename, [
-            'mime' => 'application/pdf',
-        ]);
+        $auditMail->subject(__('audit::email.auditCompleted.subject', ['template' => $this->audit->template?->title ?? '--']))
+                ->markdown('mail.email', [
+                    'url' => $url,
+                    'content' => $content,
+                    'themeColor' => $company->header_color,
+                    'actionText' => __('audit::email.auditCompleted.actionButton'),
+                    'notifiableName' => $notifiable->name
+                ]);
 
-        return $mailMessage;
+        $auditMail->attachData($pdf->output(), $filename . '.pdf');
+
+        return $auditMail;
     }
 
     /**
      * Get the array representation of the notification.
+     *
+     * @param mixed $notifiable
+     * @return array
      */
-    public function toArray($notifiable): array
+    public function toArray($notifiable)
     {
         return [
             'id' => $this->audit->id,
