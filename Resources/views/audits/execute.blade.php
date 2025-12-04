@@ -467,78 +467,76 @@
                     <input type="hidden" name="current_index" id="current_index" value="0">
 
                     @foreach($audit->responses as $index => $response)
-                    <div class="checkpoint-step" data-index="{{ $index }}" data-response-id="{{ $response->id }}" style="{{ $index > 0 ? 'display: none;' : '' }}">
-                        <div class="step-indicator">@lang('audit::app.step') {{ $index + 1 }} @lang('audit::app.of') {{ $audit->responses->count() }}</div>
-                        <h2 class="checkpoint-title">
-                            {{ $response->checkpoint->title }}
-                        </h2>
+                        <div class="checkpoint-step" data-index="{{ $index }}" data-response-id="{{ $response->id }}" style="{{ $index > 0 ? 'display: none;' : '' }}">
+                            <div class="step-indicator">@lang('audit::app.step') {{ $index + 1 }} @lang('audit::app.of') {{ $audit->responses->count() }}</div>
+                            <h2 class="checkpoint-title">
+                                {{ $response->checkpoint->title }}
+                            </h2>
 
-                        <!-- Completion Status -->
-                        <div class="status-section-title">@lang('audit::app.completionStatus')</div>
-                        <div class="status-buttons">
-                            <button type="button" class="status-btn {{ $response->status == 'completed' ? 'completed active' : '' }}" data-status="completed" data-response-id="{{ $response->id }}">
-                                <i class="fa fa-check-circle"></i> @lang('audit::app.completed')
-                            </button>
-                            <button type="button" class="status-btn {{ $response->status == 'partially_completed' ? 'partial active' : '' }}" data-status="partially_completed" data-response-id="{{ $response->id }}">
-                                <i class="fa fa-adjust"></i> @lang('audit::app.partial')
-                            </button>
-                            <button type="button" class="status-btn {{ $response->status == 'not_completed' ? 'not-completed active' : '' }}" data-status="not_completed" data-response-id="{{ $response->id }}">
-                                <i class="fa fa-times-circle"></i> @lang('audit::app.notCompleted')
-                            </button>
-                        </div>
-                        <input type="hidden" name="status_{{ $response->id }}" id="status_{{ $response->id }}" value="{{ $response->status ?? '' }}">
-
-                        @if($response->checkpoint->description)
-                        <p class="text-muted mb-4">{{ $response->checkpoint->description }}</p>
-                        @endif
-
-                        <!-- Upload Evidence -->
-                        @if($response->checkpoint->requires_file_upload || $response->checkpoint->requires_photo)
-                        <div class="upload-section">
-                            <div class="upload-title">
-                                @lang('audit::app.uploadEvidence')
-                                @if($response->checkpoint->requires_photo)
-                                    <span class="required">(@lang('audit::app.photoRequired'))</span>
-                                @endif
+                            <!-- Completion Status -->
+                            <div class="status-section-title">@lang('audit::app.completionStatus')</div>
+                            <div class="status-buttons">
+                                <button type="button" class="status-btn {{ $response->status == 'completed' ? 'completed active' : '' }}" data-status="completed" data-response-id="{{ $response->id }}">
+                                    <i class="fa fa-check-circle"></i> @lang('audit::app.completed')
+                                </button>
+                                <button type="button" class="status-btn {{ $response->status == 'partially_completed' ? 'partial active' : '' }}" data-status="partially_completed" data-response-id="{{ $response->id }}">
+                                    <i class="fa fa-adjust"></i> @lang('audit::app.partial')
+                                </button>
+                                <button type="button" class="status-btn {{ $response->status == 'not_completed' ? 'not-completed active' : '' }}" data-status="not_completed" data-response-id="{{ $response->id }}">
+                                    <i class="fa fa-times-circle"></i> @lang('audit::app.notCompleted')
+                                </button>
                             </div>
-                            <div class="dropzone-area" id="dropzone-{{ $response->id }}" data-response-id="{{ $response->id }}">
-                                <div class="dropzone-icon"><i class="fa fa-cloud-upload-alt"></i></div>
-                                <div class="dropzone-text">@lang('audit::app.dragDropText')</div>
-                                <div class="dropzone-hint">@lang('audit::app.maxFileSize')</div>
-                            </div>
-                            <input type="file" name="files_{{ $response->id }}[]" id="file-input-{{ $response->id }}" multiple @if($response->checkpoint->requires_photo) accept="image/*" @endif style="display: none;">
-                            <div class="uploaded-files" id="uploaded-files-{{ $response->id }}">
-                                @foreach($response->files as $file)
-                                <div class="uploaded-file" id="file-{{ $file->id }}">
-                                    @if($file->isImage())
-                                        <img src="{{ $file->file_url }}" alt="{{ $file->filename }}">
-                                    @else
-                                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
-                                            <i class="fa {{ $file->icon }} fa-2x text-secondary"></i>
-                                        </div>
-                                    @endif
-                                    <div class="file-overlay">{{ $file->filename }}</div>
-                                    <button type="button" class="delete-btn" data-file-id="{{ $file->id }}" data-audit-id="{{ $audit->id }}">
-                                        <i class="fa fa-times"></i>
-                                    </button>
+                            <input type="hidden" name="status_{{ $response->id }}" id="status_{{ $response->id }}" value="{{ $response->status ?? '' }}">
+
+                            @if($response->checkpoint->description)
+                                <p class="text-muted mb-4">{{ $response->checkpoint->description }}</p>
+                            @endif
+
+                            <!-- Upload Evidence -->
+                            @if($response->checkpoint->requires_file_upload || $response->checkpoint->requires_photo)
+                                <div class="upload-section">
+                                    <div class="upload-title">
+                                        @lang('audit::app.uploadEvidence')
+                                        <span class="required">(@lang('audit::app.photoRequired'))</span>
+                                    </div>
+                                    <div class="dropzone-area" id="dropzone-{{ $response->id }}" data-response-id="{{ $response->id }}">
+                                        <div class="dropzone-icon"><i class="fa fa-cloud-upload-alt"></i></div>
+                                        <div class="dropzone-text">@lang('audit::app.dragDropText')</div>
+                                        <div class="dropzone-hint">@lang('audit::app.maxFileSize')</div>
+                                    </div>
+                                    <input type="file" name="files_{{ $response->id }}[]" id="file-input-{{ $response->id }}" multiple @if($response->checkpoint->requires_photo) accept="image/*" @endif style="display: none;">
+                                    <div class="uploaded-files" id="uploaded-files-{{ $response->id }}">
+                                        @foreach($response->files as $file)
+                                            <div class="uploaded-file" id="file-{{ $file->id }}">
+                                                @if($file->isImage())
+                                                    <img src="{{ $file->file_url }}" alt="{{ $file->filename }}">
+                                                @else
+                                                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
+                                                        <i class="fa {{ $file->icon }} fa-2x text-secondary"></i>
+                                                    </div>
+                                                @endif
+                                                <div class="file-overlay">{{ $file->filename }}</div>
+                                                <button type="button" class="delete-btn" data-file-id="{{ $file->id }}" data-audit-id="{{ $audit->id }}">
+                                                    <i class="fa fa-times"></i>
+                                                </button>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
+                            @endif
 
-                        <!-- Optional Comments -->
-                        <div class="comments-section">
-                            <div class="comments-title">
-                                @if($response->checkpoint->requires_notes)
-                                    @lang('audit::app.requiredComments')<span class="text-danger">*</span>
-                                @else
-                                @lang('audit::app.optionalComments')
-                                @endif
+                            <!-- Optional Comments -->
+                            <div class="comments-section">
+                                <div class="comments-title">
+                                    @if($response->checkpoint->requires_notes)
+                                        @lang('audit::app.requiredComments')<span class="text-danger">*</span>
+                                    @else
+                                    @lang('audit::app.optionalComments')
+                                    @endif
+                                </div>
+                                <textarea class="comments-textarea" name="notes_{{ $response->id }}" id="notes_{{ $response->id }}" placeholder="@lang('audit::app.addNotesPlaceholder')">{{ $response->notes }}</textarea>
                             </div>
-                            <textarea class="comments-textarea" name="notes_{{ $response->id }}" id="notes_{{ $response->id }}" placeholder="@lang('audit::app.addNotesPlaceholder')">{{ $response->notes }}</textarea>
                         </div>
-                    </div>
                     @endforeach
 
                     <!-- Navigation Buttons -->
@@ -598,34 +596,34 @@
                 <div class="checkpoints-list-title">@lang('audit::app.checkpoints')</div>
                 <div class="checkpoints-list">
                     @foreach($audit->responses as $index => $response)
-                    @php
-                        $itemStatusClass = 'status-pending';
-                        if ($index == 0) {
-                            $itemStatusClass = 'active';
-                        } elseif ($response->responded_at) {
-                            if ($response->status == 'completed') {
-                                $itemStatusClass = 'status-completed';
-                            } elseif ($response->status == 'partially_completed') {
-                                $itemStatusClass = 'status-partial';
-                            } elseif ($response->status == 'not_completed') {
-                                $itemStatusClass = 'status-not-completed';
+                        @php
+                            $itemStatusClass = 'status-pending';
+                            if ($index == 0) {
+                                $itemStatusClass = 'active';
+                            } elseif ($response->responded_at) {
+                                if ($response->status == 'completed') {
+                                    $itemStatusClass = 'status-completed';
+                                } elseif ($response->status == 'partially_completed') {
+                                    $itemStatusClass = 'status-partial';
+                                } elseif ($response->status == 'not_completed') {
+                                    $itemStatusClass = 'status-not-completed';
+                                }
                             }
-                        }
-                    @endphp
-                    <div class="checkpoint-item {{ $itemStatusClass }}" data-index="{{ $index }}" data-response-id="{{ $response->id }}">
-                        <span class="status-icon {{ $index == 0 ? 'current' : ($response->responded_at ? ($response->status == 'completed' ? 'completed' : ($response->status == 'partially_completed' ? 'partial' : 'not-completed')) : 'pending') }}" id="sidebar-icon-{{ $response->id }}">
-                            @if($index == 0)
-                                <i class="fa fa-arrow-right"></i>
-                            @elseif($response->responded_at && $response->status == 'completed')
-                                <i class="fa fa-check"></i>
-                            @elseif($response->responded_at && $response->status == 'partially_completed')
-                                <i class="fa fa-exclamation"></i>
-                            @elseif($response->responded_at && $response->status == 'not_completed')
-                                <i class="fa fa-times"></i>
-                            @endif
-                        </span>
-                        <span class="checkpoint-text" title="{{ $response->checkpoint->title }}">{{ $index + 1 }}. {{ $response->checkpoint->title }}</span>
-                    </div>
+                        @endphp
+                        <div class="checkpoint-item {{ $itemStatusClass }}" data-index="{{ $index }}" data-response-id="{{ $response->id }}">
+                            <span class="status-icon {{ $index == 0 ? 'current' : ($response->responded_at ? ($response->status == 'completed' ? 'completed' : ($response->status == 'partially_completed' ? 'partial' : 'not-completed')) : 'pending') }}" id="sidebar-icon-{{ $response->id }}">
+                                @if($index == 0)
+                                    <i class="fa fa-arrow-right"></i>
+                                @elseif($response->responded_at && $response->status == 'completed')
+                                    <i class="fa fa-check"></i>
+                                @elseif($response->responded_at && $response->status == 'partially_completed')
+                                    <i class="fa fa-exclamation"></i>
+                                @elseif($response->responded_at && $response->status == 'not_completed')
+                                    <i class="fa fa-times"></i>
+                                @endif
+                            </span>
+                            <span class="checkpoint-text" title="{{ $response->checkpoint->title }}">{{ $index + 1 }}. {{ $response->checkpoint->title }}</span>
+                        </div>
                     @endforeach
                 </div>
 
@@ -645,378 +643,378 @@
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    let currentIndex = 0;
-    const totalSteps = {{ $audit->responses->count() }};
-    const responses = @json($audit->responses->pluck('id'));
+    $(document).ready(function() {
+        let currentIndex = 0;
+        const totalSteps = {{ $audit->responses->count() }};
+        const responses = @json($audit->responses->pluck('id'));
 
-    // Timer
-    const startTime = new Date('{{ $audit->started_at->toISOString() }}');
+        // Timer
+        const startTime = new Date('{{ $audit->started_at->toISOString() }}');
 
-    function updateTimer() {
-        const now = new Date();
-        const diff = Math.floor((now - startTime) / 1000);
-        const hours = Math.floor(diff / 3600);
-        const minutes = Math.floor((diff % 3600) / 60);
-        const seconds = diff % 60;
+        function updateTimer() {
+            const now = new Date();
+            const diff = Math.floor((now - startTime) / 1000);
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = diff % 60;
 
-        $('#timer').text(
-            String(hours).padStart(2, '0') + ':' +
-            String(minutes).padStart(2, '0') + ':' +
-            String(seconds).padStart(2, '0')
-        );
-    }
-    setInterval(updateTimer, 1000);
-    updateTimer();
-
-    // Status button click
-    $(document).on('click', '.status-btn', function() {
-        const $this = $(this);
-        const status = $this.data('status');
-        const responseId = $this.data('response-id');
-
-        // Update button states
-        $this.closest('.status-buttons').find('.status-btn').removeClass('completed partial not-completed active');
-        $this.addClass(status === 'completed' ? 'completed' : (status === 'partially_completed' ? 'partial' : 'not-completed')).addClass('active');
-
-        // Update hidden input
-        $('#status_' + responseId).val(status);
-
-        // Auto-save
-        saveCheckpoint(responseId);
-    });
-
-    // Dropzone click
-    $(document).on('click', '.dropzone-area', function(e) {
-        e.preventDefault();
-        const $dropzone = $(this);
-        // Prevent clicking while uploading
-        if ($dropzone.hasClass('uploading')) {
-            return;
+            $('#timer').text(
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0')
+            );
         }
-        const responseId = $dropzone.data('response-id');
-        $('#file-input-' + responseId).trigger('click');
-    });
+        setInterval(updateTimer, 1000);
+        updateTimer();
 
-    // File input change
-    $(document).on('change', 'input[type="file"]', function() {
-        const responseId = $(this).attr('id').replace('file-input-', '');
-        if (this.files.length > 0) {
+        // Status button click
+        $(document).on('click', '.status-btn', function() {
+            const $this = $(this);
+            const status = $this.data('status');
+            const responseId = $this.data('response-id');
+
+            // Update button states
+            $this.closest('.status-buttons').find('.status-btn').removeClass('completed partial not-completed active');
+            $this.addClass(status === 'completed' ? 'completed' : (status === 'partially_completed' ? 'partial' : 'not-completed')).addClass('active');
+
+            // Update hidden input
+            $('#status_' + responseId).val(status);
+
+            // Auto-save
             saveCheckpoint(responseId);
-        }
-    });
+        });
 
-    // Drag and drop
-    $(document).on('dragover', '.dropzone-area', function(e) {
-        e.preventDefault();
-        $(this).addClass('dragover');
-    });
-
-    $(document).on('dragleave', '.dropzone-area', function(e) {
-        e.preventDefault();
-        $(this).removeClass('dragover');
-    });
-
-    $(document).on('drop', '.dropzone-area', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $(this).removeClass('dragover');
-        const responseId = $(this).data('response-id');
-        const files = e.originalEvent.dataTransfer.files;
-        if (files.length > 0) {
-            const input = $('#file-input-' + responseId)[0];
-            // Create a DataTransfer object to set files
-            const dataTransfer = new DataTransfer();
-            for (let i = 0; i < files.length; i++) {
-                dataTransfer.items.add(files[i]);
+        // Dropzone click
+        $(document).on('click', '.dropzone-area', function(e) {
+            e.preventDefault();
+            const $dropzone = $(this);
+            // Prevent clicking while uploading
+            if ($dropzone.hasClass('uploading')) {
+                return;
             }
-            input.files = dataTransfer.files;
-            saveCheckpoint(responseId);
-        }
-    });
+            const responseId = $dropzone.data('response-id');
+            $('#file-input-' + responseId).trigger('click');
+        });
 
-    // Delete file
-    $(document).on('click', '.delete-btn', function(e) {
-        e.stopPropagation();
-        const fileId = $(this).data('file-id');
-        const auditId = $(this).data('audit-id');
-        const $fileEl = $(this).closest('.uploaded-file');
-
-        const url = "{{ route('audits.delete-file', [':audit', ':file']) }}"
-            .replace(':audit', auditId)
-            .replace(':file', fileId);
-
-        $.ajax({
-            url: url,
-            type: 'DELETE',
-            data: { _token: '{{ csrf_token() }}' },
-            success: function(response) {
-                if (response.status == 'success') {
-                    $fileEl.fadeOut(300, function() { $(this).remove(); });
-                }
+        // File input change
+        $(document).on('change', 'input[type="file"]', function() {
+            const responseId = $(this).attr('id').replace('file-input-', '');
+            if (this.files.length > 0) {
+                saveCheckpoint(responseId);
             }
         });
-    });
 
-    // Save checkpoint
-    function saveCheckpoint(responseId) {
+        // Drag and drop
+        $(document).on('dragover', '.dropzone-area', function(e) {
+            e.preventDefault();
+            $(this).addClass('dragover');
+        });
 
-        const formData = new FormData();
-        formData.append('_token', '{{ csrf_token() }}');
-        formData.append('status', $('#status_' + responseId).val());
-        formData.append('notes', $('#notes_' + responseId).val());
+        $(document).on('dragleave', '.dropzone-area', function(e) {
+            e.preventDefault();
+            $(this).removeClass('dragover');
+        });
 
-        const fileInput = $('#file-input-' + responseId)[0];
-        const $dropzone = $('#dropzone-' + responseId);
-        const hasFiles = fileInput && fileInput.files.length > 0;
-
-        if (hasFiles) {
-            for (let i = 0; i < fileInput.files.length; i++) {
-                formData.append('files[]', fileInput.files[i]);
+        $(document).on('drop', '.dropzone-area', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).removeClass('dragover');
+            const responseId = $(this).data('response-id');
+            const files = e.originalEvent.dataTransfer.files;
+            if (files.length > 0) {
+                const input = $('#file-input-' + responseId)[0];
+                // Create a DataTransfer object to set files
+                const dataTransfer = new DataTransfer();
+                for (let i = 0; i < files.length; i++) {
+                    dataTransfer.items.add(files[i]);
+                }
+                input.files = dataTransfer.files;
+                saveCheckpoint(responseId);
             }
-            // Show uploading state
-            $dropzone.addClass('uploading');
-            $dropzone.find('.dropzone-text').text('@lang("audit::app.uploading")...');
-        }
+        });
 
-        const url = "{{ route('audits.update-checkpoint', [$audit->id, ':response']) }}".replace(':response', responseId);
+        // Delete file
+        $(document).on('click', '.delete-btn', function(e) {
+            e.stopPropagation();
+            const fileId = $(this).data('file-id');
+            const auditId = $(this).data('audit-id');
+            const $fileEl = $(this).closest('.uploaded-file');
 
-        $.ajax({
-            url: url,
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
+            const url = "{{ route('audits.delete-file', [':audit', ':file']) }}"
+                .replace(':audit', auditId)
+                .replace(':file', fileId);
 
-                // Reset dropzone state
-                $dropzone.removeClass('uploading');
-                $dropzone.find('.dropzone-text').text('@lang("audit::app.dragDropText")');
+            $.ajax({
+                url: url,
+                type: 'DELETE',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function(response) {
+                    if (response.status == 'success') {
+                        $fileEl.fadeOut(300, function() { $(this).remove(); });
+                    }
+                }
+            });
+        });
 
-                if (response.status == 'success') {
-                    updateSidebarIcon(responseId, $('#status_' + responseId).val());
-                    updateProgress(response.responded, response.total);
+        // Save checkpoint
+        function saveCheckpoint(responseId) {
 
-                    // Clear file input after upload
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('status', $('#status_' + responseId).val());
+            formData.append('notes', $('#notes_' + responseId).val());
+
+            const fileInput = $('#file-input-' + responseId)[0];
+            const $dropzone = $('#dropzone-' + responseId);
+            const hasFiles = fileInput && fileInput.files.length > 0;
+
+            if (hasFiles) {
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    formData.append('files[]', fileInput.files[i]);
+                }
+                // Show uploading state
+                $dropzone.addClass('uploading');
+                $dropzone.find('.dropzone-text').text('@lang("audit::app.uploading")...');
+            }
+
+            const url = "{{ route('audits.update-checkpoint', [$audit->id, ':response']) }}".replace(':response', responseId);
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+
+                    // Reset dropzone state
+                    $dropzone.removeClass('uploading');
+                    $dropzone.find('.dropzone-text').text('@lang("audit::app.dragDropText")');
+
+                    if (response.status == 'success') {
+                        updateSidebarIcon(responseId, $('#status_' + responseId).val());
+                        updateProgress(response.responded, response.total);
+
+                        // Clear file input after upload
+                        if (fileInput) {
+                            fileInput.value = '';
+                        }
+
+                        // Reload uploaded files if new files were added
+                        if (response.files && response.files.length > 0) {
+                            const $container = $('#uploaded-files-' + responseId);
+                            response.files.forEach(function(file) {
+                                if ($('#file-' + file.id).length === 0) {
+                                    let fileHtml = `
+                                        <div class="uploaded-file" id="file-${file.id}">
+                                            ${file.is_image ? `<img src="${file.url}" alt="${file.filename}">` : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f8f9fa;"><i class="fa ${file.icon} fa-2x text-secondary"></i></div>`}
+                                            <div class="file-overlay">${file.filename}</div>
+                                            <button type="button" class="delete-btn" data-file-id="${file.id}" data-audit-id="{{ $audit->id }}">
+                                                <i class="fa fa-times"></i>
+                                            </button>
+                                        </div>
+                                    `;
+                                    $container.append(fileHtml);
+                                }
+                            });
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Reset dropzone state
+                    $dropzone.removeClass('uploading');
+                    $dropzone.find('.dropzone-text').text('@lang("audit::app.dragDropText")');
+
+                    // Clear file input on error
                     if (fileInput) {
                         fileInput.value = '';
                     }
 
-                    // Reload uploaded files if new files were added
-                    if (response.files && response.files.length > 0) {
-                        const $container = $('#uploaded-files-' + responseId);
-                        response.files.forEach(function(file) {
-                            if ($('#file-' + file.id).length === 0) {
-                                let fileHtml = `
-                                    <div class="uploaded-file" id="file-${file.id}">
-                                        ${file.is_image ? `<img src="${file.url}" alt="${file.filename}">` : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f8f9fa;"><i class="fa ${file.icon} fa-2x text-secondary"></i></div>`}
-                                        <div class="file-overlay">${file.filename}</div>
-                                        <button type="button" class="delete-btn" data-file-id="${file.id}" data-audit-id="{{ $audit->id }}">
-                                            <i class="fa fa-times"></i>
-                                        </button>
-                                    </div>
-                                `;
-                                $container.append(fileHtml);
-                            }
-                        });
-                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: '@lang("audit::app.uploadError")',
+                        text: xhr.responseJSON ? xhr.responseJSON.message : '@lang("audit::app.failedToSave")',
+                        customClass: { confirmButton: 'btn btn-primary' },
+                        buttonsStyling: false
+                    });
                 }
-            },
-            error: function(xhr, status, error) {
-                // Reset dropzone state
-                $dropzone.removeClass('uploading');
-                $dropzone.find('.dropzone-text').text('@lang("audit::app.dragDropText")');
+            });
+        }
 
-                // Clear file input on error
-                if (fileInput) {
-                    fileInput.value = '';
-                }
+        // Update sidebar icon and item background
+        function updateSidebarIcon(responseId, status) {
+            const $icon = $('#sidebar-icon-' + responseId);
+            const $item = $icon.closest('.checkpoint-item');
 
-                Swal.fire({
-                    icon: 'error',
-                    title: '@lang("audit::app.uploadError")',
-                    text: xhr.responseJSON ? xhr.responseJSON.message : '@lang("audit::app.failedToSave")',
-                    customClass: { confirmButton: 'btn btn-primary' },
-                    buttonsStyling: false
-                });
+            // Update icon
+            $icon.removeClass('completed partial not-completed pending current');
+
+            if (status === 'completed') {
+                $icon.addClass('completed').html('<i class="fa fa-check"></i>');
+            } else if (status === 'partially_completed') {
+                $icon.addClass('partial').html('<i class="fa fa-exclamation"></i>');
+            } else if (status === 'not_completed') {
+                $icon.addClass('not-completed').html('<i class="fa fa-times"></i>');
+            } else {
+                $icon.addClass('pending').html('');
+            }
+
+            // Update item background
+            $item.removeClass('status-completed status-partial status-not-completed status-pending active');
+
+            if (status === 'completed') {
+                $item.addClass('status-completed');
+            } else if (status === 'partially_completed') {
+                $item.addClass('status-partial');
+            } else if (status === 'not_completed') {
+                $item.addClass('status-not-completed');
+            } else {
+                $item.addClass('status-pending');
+            }
+        }
+
+        // Update progress
+        function updateProgress(responded, total) {
+            $('#progress-count').text(responded);
+            const percentage = Math.round((responded / total) * 100);
+            $('#progress-bar').css('width', percentage + '%');
+
+            // Update color based on completion
+            const isCompleted = responded === total && total > 0;
+            if (isCompleted) {
+                $('#progress-count-wrapper').addClass('completed');
+                $('#progress-bar').addClass('completed');
+            } else {
+                $('#progress-count-wrapper').removeClass('completed');
+                $('#progress-bar').removeClass('completed');
+            }
+        }
+
+        // Navigation
+        function showStep(index) {
+            $('.checkpoint-step').hide();
+            $('.checkpoint-step[data-index="' + index + '"]').show();
+
+            // Update previous active item - restore its status color
+            $('.checkpoint-item .status-icon.current').each(function() {
+                const respId = $(this).closest('.checkpoint-item').data('response-id');
+                const status = $('#status_' + respId).val();
+                $(this).removeClass('current');
+                updateSidebarIcon(respId, status);
+            });
+
+            // Update sidebar active state - remove active from all, add to current
+            $('.checkpoint-item').removeClass('active');
+            const $currentItem = $('.checkpoint-item[data-index="' + index + '"]');
+            $currentItem.removeClass('status-completed status-partial status-not-completed status-pending').addClass('active');
+
+            // Update current icon to show arrow
+            const currentResponseId = responses[index];
+            const $currentIcon = $('#sidebar-icon-' + currentResponseId);
+            $currentIcon.removeClass('completed partial not-completed pending').addClass('current').html('<i class="fa fa-arrow-right"></i>');
+
+            // Update button states
+            if (index === 0) {
+                $('#prev-step').hide();
+            } else {
+                $('#prev-step').show();
+            }
+
+            if (index === totalSteps - 1) {
+                $('#next-step').hide();
+            } else {
+                $('#next-step').show().html('@lang("audit::app.nextStep") <i class="fa fa-arrow-right"></i>');
+            }
+
+            currentIndex = index;
+
+            // Scroll sidebar item into view
+            const $activeItem = $('.checkpoint-item[data-index="' + index + '"]');
+            if ($activeItem.length) {
+                $activeItem[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        // Previous step
+        $('#prev-step').on('click', function() {
+            if (currentIndex > 0) {
+                // Save current before moving
+                const currentResponseId = responses[currentIndex];
+                saveCheckpoint(currentResponseId);
+                showStep(currentIndex - 1);
             }
         });
-    }
 
-    // Update sidebar icon and item background
-    function updateSidebarIcon(responseId, status) {
-        const $icon = $('#sidebar-icon-' + responseId);
-        const $item = $icon.closest('.checkpoint-item');
+        // Next step
+        $('#next-step').on('click', function() {
+            const currentResponseId = responses[currentIndex];
+            saveCheckpoint(currentResponseId);
 
-        // Update icon
-        $icon.removeClass('completed partial not-completed pending current');
-
-        if (status === 'completed') {
-            $icon.addClass('completed').html('<i class="fa fa-check"></i>');
-        } else if (status === 'partially_completed') {
-            $icon.addClass('partial').html('<i class="fa fa-exclamation"></i>');
-        } else if (status === 'not_completed') {
-            $icon.addClass('not-completed').html('<i class="fa fa-times"></i>');
-        } else {
-            $icon.addClass('pending').html('');
-        }
-
-        // Update item background
-        $item.removeClass('status-completed status-partial status-not-completed status-pending active');
-
-        if (status === 'completed') {
-            $item.addClass('status-completed');
-        } else if (status === 'partially_completed') {
-            $item.addClass('status-partial');
-        } else if (status === 'not_completed') {
-            $item.addClass('status-not-completed');
-        } else {
-            $item.addClass('status-pending');
-        }
-    }
-
-    // Update progress
-    function updateProgress(responded, total) {
-        $('#progress-count').text(responded);
-        const percentage = Math.round((responded / total) * 100);
-        $('#progress-bar').css('width', percentage + '%');
-
-        // Update color based on completion
-        const isCompleted = responded === total && total > 0;
-        if (isCompleted) {
-            $('#progress-count-wrapper').addClass('completed');
-            $('#progress-bar').addClass('completed');
-        } else {
-            $('#progress-count-wrapper').removeClass('completed');
-            $('#progress-bar').removeClass('completed');
-        }
-    }
-
-    // Navigation
-    function showStep(index) {
-        $('.checkpoint-step').hide();
-        $('.checkpoint-step[data-index="' + index + '"]').show();
-
-        // Update previous active item - restore its status color
-        $('.checkpoint-item .status-icon.current').each(function() {
-            const respId = $(this).closest('.checkpoint-item').data('response-id');
-            const status = $('#status_' + respId).val();
-            $(this).removeClass('current');
-            updateSidebarIcon(respId, status);
+            if (currentIndex < totalSteps - 1) {
+                showStep(currentIndex + 1);
+            }
         });
 
-        // Update sidebar active state - remove active from all, add to current
-        $('.checkpoint-item').removeClass('active');
-        const $currentItem = $('.checkpoint-item[data-index="' + index + '"]');
-        $currentItem.removeClass('status-completed status-partial status-not-completed status-pending').addClass('active');
-
-        // Update current icon to show arrow
-        const currentResponseId = responses[index];
-        const $currentIcon = $('#sidebar-icon-' + currentResponseId);
-        $currentIcon.removeClass('completed partial not-completed pending').addClass('current').html('<i class="fa fa-arrow-right"></i>');
-
-        // Update button states
-        if (index === 0) {
-            $('#prev-step').hide();
-        } else {
-            $('#prev-step').show();
-        }
-
-        if (index === totalSteps - 1) {
-            $('#next-step').hide();
-        } else {
-            $('#next-step').show().html('@lang("audit::app.nextStep") <i class="fa fa-arrow-right"></i>');
-        }
-
-        currentIndex = index;
-
-        // Scroll sidebar item into view
-        const $activeItem = $('.checkpoint-item[data-index="' + index + '"]');
-        if ($activeItem.length) {
-            $activeItem[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-    }
-
-    // Previous step
-    $('#prev-step').on('click', function() {
-        if (currentIndex > 0) {
+        // Click on sidebar checkpoint
+        $(document).on('click', '.checkpoint-item', function() {
+            const index = $(this).data('index');
             // Save current before moving
             const currentResponseId = responses[currentIndex];
             saveCheckpoint(currentResponseId);
-            showStep(currentIndex - 1);
-        }
-    });
+            showStep(index);
+        });
 
-    // Next step
-    $('#next-step').on('click', function() {
-        const currentResponseId = responses[currentIndex];
-        saveCheckpoint(currentResponseId);
+        // Submit audit
+        $('#submit-audit').on('click', function() {
+            // Save current checkpoint first
+            const currentResponseId = responses[currentIndex];
+            saveCheckpoint(currentResponseId);
 
-        if (currentIndex < totalSteps - 1) {
-            showStep(currentIndex + 1);
-        }
-    });
-
-    // Click on sidebar checkpoint
-    $(document).on('click', '.checkpoint-item', function() {
-        const index = $(this).data('index');
-        // Save current before moving
-        const currentResponseId = responses[currentIndex];
-        saveCheckpoint(currentResponseId);
-        showStep(index);
-    });
-
-    // Submit audit
-    $('#submit-audit').on('click', function() {
-        // Save current checkpoint first
-        const currentResponseId = responses[currentIndex];
-        saveCheckpoint(currentResponseId);
-
-        Swal.fire({
-            title: "@lang('audit::app.completeAuditConfirm')",
-            text: "@lang('audit::app.completeAuditConfirmText')",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: "@lang('audit::app.yesComplete')",
-            cancelButtonText: "@lang('app.cancel')",
-            customClass: {
-                confirmButton: 'btn btn-success mr-3',
-                cancelButton: 'btn btn-secondary'
-            },
-            buttonsStyling: false
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "{{ route('audits.complete', $audit->id) }}",
-                    type: 'POST',
-                    data: { _token: '{{ csrf_token() }}' },
-                    success: function(response) {
-                        if (response.status == 'success') {
-                            window.location.href = response.redirectUrl;
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                text: response.message,
-                                customClass: { confirmButton: 'btn btn-primary' },
-                                buttonsStyling: false
-                            });
+            Swal.fire({
+                title: "@lang('audit::app.completeAuditConfirm')",
+                text: "@lang('audit::app.completeAuditConfirmText')",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: "@lang('audit::app.yesComplete')",
+                cancelButtonText: "@lang('app.cancel')",
+                customClass: {
+                    confirmButton: 'btn btn-success mr-3',
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ route('audits.complete', $audit->id) }}",
+                        type: 'POST',
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: function(response) {
+                            if (response.status == 'success') {
+                                window.location.href = response.redirectUrl;
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    text: response.message,
+                                    customClass: { confirmButton: 'btn btn-primary' },
+                                    buttonsStyling: false
+                                });
+                            }
                         }
-                    }
-                });
-            }
+                    });
+                }
+            });
+        });
+
+        // Save and Exit
+        $('#save-exit').on('click', function() {
+            // Save current checkpoint first
+            const currentResponseId = responses[currentIndex];
+            saveCheckpoint(currentResponseId);
+
+            setTimeout(function() {
+                window.location.href = "{{ route('audits.index') }}";
+            }, 500);
         });
     });
-
-    // Save and Exit
-    $('#save-exit').on('click', function() {
-        // Save current checkpoint first
-        const currentResponseId = responses[currentIndex];
-        saveCheckpoint(currentResponseId);
-
-        setTimeout(function() {
-            window.location.href = "{{ route('audits.index') }}";
-        }, 500);
-    });
-});
 </script>
 @endpush

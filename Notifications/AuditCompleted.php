@@ -3,11 +3,12 @@
 namespace Modules\Audit\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Modules\Audit\Entities\Audit;
 
-class AuditCompleted extends Notification
+class AuditCompleted extends Notification implements ShouldQueue
 {
     use Queueable;
 
