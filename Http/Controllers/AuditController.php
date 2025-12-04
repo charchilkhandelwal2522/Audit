@@ -314,8 +314,8 @@ class AuditController extends AccountBaseController
 
             // Notify department manager (could be extended to find actual managers)
             if ($setting->send_result_to_manager) {
-                if ($audit->auditee->employeeDetail->reportingTo) {
-                    $audit->auditee->employeeDetail->reportingTo->notify(new AuditCompleted($audit));
+                if ($audit->auditee?->employeeDetail?->reportingTo) {
+                    $audit->auditee?->employeeDetail?->reportingTo->notify(new AuditCompleted($audit));
                 }
             }
         }

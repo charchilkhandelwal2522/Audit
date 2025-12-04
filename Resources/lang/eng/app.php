@@ -134,7 +134,8 @@ return [
 
     // Notes and Summary
     'enterNotes' => 'Enter notes...',
-    'optionalComments' => 'Optional Comments',
+    'optionalComments' => 'Comments (Optional)',
+    'requiredComments' => 'Comments (Required)',
     'addNotesPlaceholder' => 'Add any relevant notes here...',
     'summary' => 'Summary',
 

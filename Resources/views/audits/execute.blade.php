@@ -530,9 +530,10 @@
                         <!-- Optional Comments -->
                         <div class="comments-section">
                             <div class="comments-title">
-                                @lang('audit::app.optionalComments')
                                 @if($response->checkpoint->requires_notes)
-                                    <span class="text-danger">*</span>
+                                    @lang('audit::app.requiredComments')<span class="text-danger">*</span>
+                                @else
+                                @lang('audit::app.optionalComments')
                                 @endif
                             </div>
                             <textarea class="comments-textarea" name="notes_{{ $response->id }}" id="notes_{{ $response->id }}" placeholder="@lang('audit::app.addNotesPlaceholder')">{{ $response->notes }}</textarea>
@@ -700,8 +701,6 @@ $(document).ready(function() {
     // File input change
     $(document).on('change', 'input[type="file"]', function() {
         const responseId = $(this).attr('id').replace('file-input-', '');
-        console.log('File input changed for response:', responseId);
-        console.log('Files selected:', this.files.length);
         if (this.files.length > 0) {
             saveCheckpoint(responseId);
         }
@@ -724,7 +723,6 @@ $(document).ready(function() {
         $(this).removeClass('dragover');
         const responseId = $(this).data('response-id');
         const files = e.originalEvent.dataTransfer.files;
-        console.log('Files dropped:', files.length);
         if (files.length > 0) {
             const input = $('#file-input-' + responseId)[0];
             // Create a DataTransfer object to set files
@@ -762,7 +760,6 @@ $(document).ready(function() {
 
     // Save checkpoint
     function saveCheckpoint(responseId) {
-        console.log('saveCheckpoint called for response:', responseId);
 
         const formData = new FormData();
         formData.append('_token', '{{ csrf_token() }}');
@@ -773,13 +770,8 @@ $(document).ready(function() {
         const $dropzone = $('#dropzone-' + responseId);
         const hasFiles = fileInput && fileInput.files.length > 0;
 
-        console.log('File input found:', !!fileInput);
-        console.log('Has files:', hasFiles);
-
         if (hasFiles) {
-            console.log('Appending', fileInput.files.length, 'files to formData');
             for (let i = 0; i < fileInput.files.length; i++) {
-                console.log('File', i + 1, ':', fileInput.files[i].name, fileInput.files[i].size, 'bytes');
                 formData.append('files[]', fileInput.files[i]);
             }
             // Show uploading state
@@ -788,7 +780,6 @@ $(document).ready(function() {
         }
 
         const url = "{{ route('audits.update-checkpoint', [$audit->id, ':response']) }}".replace(':response', responseId);
-        console.log('Upload URL:', url);
 
         $.ajax({
             url: url,
@@ -797,7 +788,7 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
-                console.log('Upload response:', response);
+
                 // Reset dropzone state
                 $dropzone.removeClass('uploading');
                 $dropzone.find('.dropzone-text').text('@lang("audit::app.dragDropText")');
