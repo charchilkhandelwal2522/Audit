@@ -17,6 +17,7 @@ return [
     'enterTemplateTitle' => 'eg., Daily Store Opening Checklist',
     'templateDescription' => 'Add a brief description of what this audit cover...',
     'templateCreated' => 'Template created successfully',
+    'templatesCreated' => ':count templates created successfully',
     'templatePreview' => 'Template Preview',
     'templateInfo' => 'Template Information',
     'averageCheckpoints' => 'Average Checkpoints',

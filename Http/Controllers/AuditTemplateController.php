@@ -58,7 +58,7 @@ class AuditTemplateController extends AccountBaseController
             $this->departmentCount = $this->templates->pluck('department_id')->unique()->filter()->count();
 
             $totalCheckpoints = $this->templates->sum('checkpoints_count');
-            $this->averageCheckpoints = $this->totalTemplates > 0 ? 
+            $this->averageCheckpoints = $this->totalTemplates > 0 ?
             round($totalCheckpoints / $this->totalTemplates, 2) : 0;
         }
         return $dataTable->render('audit::audit-templates.index', $this->data);
@@ -88,35 +88,50 @@ class AuditTemplateController extends AccountBaseController
      */
     public function store(StoreAuditTemplateRequest $request)
     {
-        $template = new AuditTemplate();
-        $template->company_id = company()->id;
-        $template->title = $request->title;
-        $template->description = $request->description;
-        $template->department_id = $request->department_id;
-        $template->status = $request->status ?? 'active';
-        $template->added_by = user()->id;
-        $template->save();
+        $departmentIds = $request->department_ids ?? [];
+        $createdTemplates = [];
 
-        // Save checkpoints with their order from drag-and-drop
-        if ($request->has('checkpoints')) {
-            foreach ($request->checkpoints as $checkpoint) {
-                // Use the order from the form (set by drag-and-drop), or default to 0
-                $order = isset($checkpoint['order']) ? (int)$checkpoint['order'] : 0;
+        // Create a template for each selected department
+        foreach ($departmentIds as $departmentId) {
+            $template = new AuditTemplate();
+            $template->company_id = company()->id;
+            $template->title = $request->title;
+            $template->description = $request->description;
+            $template->department_id = $departmentId;
+            $template->status = $request->status ?? 'active';
+            $template->added_by = user()->id;
+            $template->save();
 
-                AuditTemplateCheckpoint::create([
-                    'audit_template_id' => $template->id,
-                    'title' => $checkpoint['title'],
-                    'description' => $checkpoint['description'] ?? null,
-                    'order' => $order,
-                    'requires_file_upload' => isset($checkpoint['requires_file_upload']),
-                    'requires_photo' => isset($checkpoint['requires_photo']),
-                    'requires_notes' => isset($checkpoint['requires_notes']),
-                    'is_mandatory' => isset($checkpoint['is_mandatory']),
-                ]);
+            // Save checkpoints with their order from drag-and-drop
+            if ($request->has('checkpoints')) {
+                foreach ($request->checkpoints as $checkpoint) {
+                    // Use the order from the form (set by drag-and-drop), or default to 0
+                    $order = isset($checkpoint['order']) ? (int)$checkpoint['order'] : 0;
+
+                    AuditTemplateCheckpoint::create([
+                        'audit_template_id' => $template->id,
+                        'title' => $checkpoint['title'],
+                        'description' => $checkpoint['description'] ?? null,
+                        'order' => $order,
+                        'requires_file_upload' => isset($checkpoint['requires_file_upload']),
+                        'requires_photo' => isset($checkpoint['requires_photo']),
+                        'requires_notes' => isset($checkpoint['requires_notes']),
+                        'is_mandatory' => isset($checkpoint['is_mandatory']),
+                    ]);
+                }
             }
+
+            $createdTemplates[] = $template->id;
         }
 
-        return Reply::successWithData(__('audit::app.templateCreated'), ['redirectUrl' => route('audit-templates.index')]);
+        $count = count($createdTemplates);
+        if ($count > 1) {
+            $message = str_replace(':count', $count, __('audit::app.templatesCreated'));
+        } else {
+            $message = __('audit::app.templateCreated');
+        }
+
+        return Reply::successWithData($message, ['redirectUrl' => route('audit-templates.index')]);
     }
 
     /**
@@ -171,8 +186,8 @@ class AuditTemplateController extends AccountBaseController
     {
         $template = AuditTemplate::findOrFail($id);
         $template->title = $request->title;
-        $template->description = $request->description;
         $template->department_id = $request->department_id;
+        $template->description = $request->description;
         $template->status = $request->status ?? 'active';
         $template->last_updated_by = user()->id;
         $template->save();

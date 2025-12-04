@@ -22,7 +22,8 @@ class StoreAuditTemplateRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'department_id' => 'required|exists:teams,id',
+            'department_ids' => 'required|array|min:1',
+            'department_ids.*' => 'required|exists:teams,id',
             'status' => 'nullable|in:active,inactive',
             'checkpoints' => 'required|array|min:1',
             'checkpoints.*.title' => 'required|string|max:255',
@@ -37,7 +38,8 @@ class StoreAuditTemplateRequest extends FormRequest
     {
         return [
             'title.required' => __('audit::validation.titleRequired'),
-            'department_id.required' => __('audit::validation.departmentRequired'),
+            'department_ids.required' => __('audit::validation.departmentRequired'),
+            'department_ids.min' => __('audit::validation.departmentRequired'),
             'checkpoints.required' => __('audit::validation.checkpointsRequired'),
             'checkpoints.min' => __('audit::validation.checkpointsMin'),
             'checkpoints.*.title.required' => __('audit::validation.checkpointTitleRequired'),

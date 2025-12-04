@@ -63,10 +63,9 @@
                     </div>
 
                     <div class="col-md-6">
-                        <x-forms.label class="my-3" fieldId="department_id" :fieldLabel="__('audit::app.department')" fieldRequired="true">
+                        <x-forms.label class="my-3" fieldId="department_ids" :fieldLabel="__('audit::app.department')" fieldRequired="true">
                         </x-forms.label>
-                        <select class="form-control select-picker" name="department_id" id="department_id" data-live-search="true">
-                            <option value="">--</option>
+                        <select class="form-control select-picker" name="department_ids[]" id="department_ids" data-live-search="true" multiple>
                             @foreach ($departments as $department)
                                 <option value="{{ $department->id }}">{{ $department->team_name }}</option>
                             @endforeach
