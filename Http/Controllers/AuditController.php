@@ -300,21 +300,26 @@ class AuditController extends AccountBaseController
 
         // Send notifications
         $setting = AuditSetting::where('company_id', company()->id)->first();
+        info($setting);
 
         if ($setting) {
             // Notify auditee
             if ($setting->send_result_to_auditee && $audit->auditee) {
+                info('Mail send to Auditee');
                 $audit->auditee->notify(new AuditCompleted($audit));
             }
 
             // Notify auditor
             if ($setting->send_result_to_auditor && $audit->auditor) {
+                info('Mail send to Auditor');
                 $audit->auditor->notify(new AuditCompleted($audit));
             }
 
             // Notify department manager (could be extended to find actual managers)
             if ($setting->send_result_to_manager) {
-                if ($audit->auditee?->employeeDetail?->reportingTo) {
+                info('Mail send to Reporting Manager');
+                if ($audit->auditee && $audit->auditee?->employeeDetail && $audit->auditee?->employeeDetail?->reportingTo) {
+                    info('checking...');
                     $audit->auditee?->employeeDetail?->reportingTo->notify(new AuditCompleted($audit));
                 }
             }
