@@ -141,7 +141,7 @@
             text-align: center;
             margin-top: 30px;
             padding-top: 20px;
-            border-top: 1px solid #dee2e6;
+            /* border-top: 1px solid #dee2e6; */
             font-size: 10px;
             color: #6c757d;
         }
