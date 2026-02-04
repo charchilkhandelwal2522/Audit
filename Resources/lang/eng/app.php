@@ -51,7 +51,7 @@ return [
     // Audit
     'createAudit' => 'Create New Audit',
     'newAuditInitiation' => 'New Audit Initiation',
-    'newAuditInitiationInfo' => 'Select the department, auditee, and template to begin.',
+    'newAuditInitiationInfo' => 'Select the department, auditee, template, and take a photo to begin.',
     'executeAudit' => 'Execute Audit',
     'continueAudit' => 'Continue Audit',
     'completeAudit' => 'Complete Audit',
