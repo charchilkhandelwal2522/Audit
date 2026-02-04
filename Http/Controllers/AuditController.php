@@ -90,8 +90,7 @@ class AuditController extends AccountBaseController
         $audit->added_by = user()->id;
 
         if ($request->hasFile('audit_photo')) {
-            $path = $request->file('audit_photo')->store('audit-photos', 'public');
-            $audit->photo = $path;
+            $audit->photo = Files::uploadLocalOrS3($request->file('audit_photo'), 'audit-photos', 400);
         }
 
         $audit->save();

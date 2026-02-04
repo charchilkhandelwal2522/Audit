@@ -561,8 +561,8 @@
                 <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                     <div class="sidebar-title mb-0 flex-grow-1">{{ $audit->template->title }}</div>
                     @if($audit->photo)
-                        <a href="{{ asset('storage/' . $audit->photo) }}" target="_blank" class="flex-shrink-0">
-                            <img src="{{ asset('storage/' . $audit->photo) }}" alt="@lang('audit::app.photo')" class="img-fluid rounded border" style="width: 60px; height: 60px; object-fit: cover;">
+                        <a href="{{ $audit->photo_url }}" target="_blank" class="flex-shrink-0">
+                            <img src="{{ $audit->photo_url }}" alt="@lang('audit::app.photo')" class="img-fluid rounded border" style="width: 60px; height: 60px; object-fit: cover;">
                         </a>
                     @endif
                 </div>

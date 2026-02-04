@@ -45,6 +45,7 @@ class Audit extends BaseModel
         'partially_completed_checkpoints',
         'summary',
         'report_pdf',
+        'photo',
         'added_by',
     ];
 
@@ -66,7 +67,7 @@ class Audit extends BaseModel
         'company_id',
     ];
 
-    protected $appends = ['duration_formatted', 'report_pdf_url'];
+    protected $appends = ['duration_formatted', 'report_pdf_url', 'photo_url'];
 
     /**
      * Get the audit template.
@@ -154,6 +155,23 @@ class Audit extends BaseModel
         }
 
         return asset_url_local_s3('audit-reports/' . $this->report_pdf);
+    }
+
+    /**
+     * Get the audit photo URL (stored via Files::uploadLocalOrS3 like other app uploads).
+     * Backward compatible with old storage path (storage/app/public).
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (!$this->photo) {
+            return null;
+        }
+
+        if (str_contains($this->photo, '/')) {
+            return asset('storage/' . $this->photo);
+        }
+
+        return asset_url_local_s3('audit-photos/' . $this->photo);
     }
 
     /**

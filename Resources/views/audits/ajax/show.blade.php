@@ -449,8 +449,8 @@
             @if($audit->photo)
                 <div class="audit-photo-section">
                     <div class="participants-title">Live @lang('audit::app.photo')</div>
-                    <a href="{{ asset('storage/' . $audit->photo) }}" target="_blank" class="d-block">
-                        <img src="{{ asset('storage/' . $audit->photo) }}" alt="@lang('audit::app.photo')" class="audit-photo-img">
+                    <a href="{{ $audit->photo_url }}" target="_blank" class="d-block">
+                        <img src="{{ $audit->photo_url }}" alt="@lang('audit::app.photo')" class="audit-photo-img">
                     </a>
                 </div>
             @endif
