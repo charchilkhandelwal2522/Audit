@@ -70,29 +70,35 @@
                             @lang('audit::app.uploadPhoto')
                         </h5>
 
-                        <div class="row">
-                            <div class="col-md-3">
-                                <!-- Camera buttons -->
-                                <button type="button" class="btn btn-sm btn-primary" id="openCamera">
-                                    <i class="fa fa-camera"></i> Take Photo
-                                </button>
-                                <button type="button" class="btn btn-sm btn-success d-none" id="capturePhoto">
-                                    Capture
-                                </button>
+                        <div class="form-group mb-0">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <!-- Upload / Camera buttons (only one option) -->
+                                    <button type="button" class="btn btn-sm btn-secondary mb-2" id="uploadPhotoBtn">
+                                        <i class="fa fa-upload"></i> @lang('audit::app.uploadPhoto')
+                                    </button>
 
+                                    <button type="button" class="btn btn-sm btn-primary mb-2" id="openCamera">
+                                        <i class="fa fa-camera"></i> @lang('audit::app.takePhoto')
+                                    </button>
+
+                                    <button type="button" class="btn btn-sm btn-success d-none" id="capturePhoto">
+                                        @lang('audit::app.capture')
+                                    </button>
+
+                                </div>
+
+                                <div class="col-md-6">
+                                    <video id="cameraStream" class="d-none" width="25%" autoplay></video>
+                                    <canvas id="photoCanvas" class="d-none"></canvas>
+
+                                    <img id="audit-photo-preview"
+                                         class="img-thumbnail mt-2 d-none"
+                                         style="max-height: 180px;">
+                                </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <video id="cameraStream" class="d-none" width="25%" autoplay></video>
-                                <canvas id="photoCanvas" class="d-none"></canvas>
-
-                                <img id="audit-photo-preview"
-                                     class="img-thumbnail mt-2 d-none"
-                                     style="max-height: 180px;">
-                            </div>
-
-                            <input type="file" name="audit_photo" id="audit_photo" class="d-none">
-
+                            <input type="file" name="audit_photo" id="audit_photo" class="d-none" accept="image/*">
                         </div>
                     </div>
 
@@ -189,8 +195,60 @@ $(document).ready(function() {
 
     let stream = null;
 
+    function stopCameraStream() {
+        try {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        } catch (e) {
+            // ignore
+        }
+        stream = null;
+    }
+
+    function clearSelectedPhoto() {
+        const input = document.getElementById('audit_photo');
+        if (input) {
+            input.value = '';
+        }
+
+        $('#audit-photo-preview').attr('src', '').addClass('d-none');
+    }
+
+    function resetToUploadMode() {
+        stopCameraStream();
+        $('#cameraStream').addClass('d-none').get(0).srcObject = null;
+        $('#capturePhoto').addClass('d-none');
+    }
+
+    // Upload photo (file picker)
+    $('#uploadPhotoBtn').on('click', function () {
+        resetToUploadMode();
+        clearSelectedPhoto();
+        document.getElementById('audit_photo').click();
+    });
+
+    // When user selects an image file, show preview and ensure camera is off
+    $('#audit_photo').on('change', function () {
+        resetToUploadMode();
+
+        const file = this.files && this.files[0] ? this.files[0] : null;
+        if (!file) {
+            clearSelectedPhoto();
+            return;
+        }
+
+        $('#audit-photo-preview')
+            .attr('src', URL.createObjectURL(file))
+            .removeClass('d-none');
+    });
+
     // Open camera
     $('#openCamera').on('click', async function () {
+        // Camera option chosen: clear any uploaded file first
+        clearSelectedPhoto();
+        stopCameraStream();
+
         try {
             stream = await navigator.mediaDevices.getUserMedia({ video: true });
 
@@ -217,7 +275,7 @@ $(document).ready(function() {
         ctx.drawImage(video, 0, 0);
 
         // Stop camera
-        stream.getTracks().forEach(track => track.stop());
+        stopCameraStream();
 
         // Convert canvas to file
         canvas.toBlob(blob => {

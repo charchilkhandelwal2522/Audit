@@ -246,5 +246,7 @@ return [
     'generatedOn' => 'Generated On',
     'checkpointDetails' => 'Checkpoint Details',
     'uploadPhoto' => 'Upload Photo',
+    'takePhoto' => 'Take Photo',
+    'capture' => 'Capture',
 ];
 
