@@ -256,13 +256,13 @@
                                 @if($file->isImage())
                                     <div class="file-item-image">
                                         <img src="{{ $file->file_url }}" alt="{{ $file->filename }}" />
-                                        <small>{{ $file->filename }}</small>
+                                        {{-- <small>{{ $file->filename }}</small> --}}
                                     </div>
                                 @else
                                     <div class="file-item">
                                         <span class="file-icon">📎</span>
                                         <a href="{{ $file->file_url }}" class="file-link" target="_blank">
-                                            {{ $file->filename }}
+                                            {{-- {{ $file->filename }} --}}
                                         </a>
                                         <span class="file-size">({{ $file->formatted_size }})</span>
                                     </div>
