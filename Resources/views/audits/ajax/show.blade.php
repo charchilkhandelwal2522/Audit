@@ -149,6 +149,13 @@
         font-weight: 600;
         color: #1a1a2e;
     }
+    .audit-photo-img {
+        max-width: 120px;
+        max-height: 140px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #e3e6ef;
+    }
     .participants-section {
         border-left: 1px solid #e3e6ef;
         padding-left: 30px;
@@ -359,7 +366,7 @@
                 @endif
             </div>
             <div class="audit-actions">
-                <button type="button" class="btn btn-print" onclick="window.print()">
+                <button type="button" class="btn btn-print" id="printAudit">
                     <i class="fa fa-print mr-1"></i> @lang('app.print')
                 </button>
                 <a href="{{ route('audits.export-pdf', $audit->id) }}" class="btn btn-download-pdf">
@@ -438,26 +445,36 @@
                 </div>
             </div>
 
+            <!-- Audit Photo -->
+            @if($audit->photo)
+                <div class="audit-photo-section">
+                    <div class="participants-title">Live @lang('audit::app.photo')</div>
+                    <a href="{{ asset('storage/' . $audit->photo) }}" target="_blank" class="d-block">
+                        <img src="{{ asset('storage/' . $audit->photo) }}" alt="@lang('audit::app.photo')" class="audit-photo-img">
+                    </a>
+                </div>
+            @endif
+
             <!-- Participants -->
             <div class="participants-section">
                 <div class="participants-title">@lang('audit::app.participants')</div>
                 @if($audit->auditor)
-                <div class="participant-item">
-                    <img src="{{ $audit->auditor->image_url }}" alt="{{ $audit->auditor->name }}">
-                    <div class="participant-info">
-                        <div class="participant-name">{{ $audit->auditor->name }}</div>
-                        <div class="participant-role">@lang('audit::app.auditor')</div>
+                    <div class="participant-item">
+                        <img src="{{ $audit->auditor->image_url }}" alt="{{ $audit->auditor->name }}">
+                        <div class="participant-info">
+                            <div class="participant-name">{{ $audit->auditor->name }}</div>
+                            <div class="participant-role">@lang('audit::app.auditor')</div>
+                        </div>
                     </div>
-                </div>
                 @endif
                 @if($audit->auditee)
-                <div class="participant-item">
-                    <img src="{{ $audit->auditee->image_url }}" alt="{{ $audit->auditee->name }}">
-                    <div class="participant-info">
-                        <div class="participant-name">{{ $audit->auditee->name }}</div>
-                        <div class="participant-role">@lang('audit::app.auditee') @if($audit->department)({{ $audit->department->team_name }})@endif</div>
+                    <div class="participant-item">
+                        <img src="{{ $audit->auditee->image_url }}" alt="{{ $audit->auditee->name }}">
+                        <div class="participant-info">
+                            <div class="participant-name">{{ $audit->auditee->name }}</div>
+                            <div class="participant-role">@lang('audit::app.auditee') @if($audit->department)({{ $audit->department->team_name }})@endif</div>
+                        </div>
                     </div>
-                </div>
                 @endif
             </div>
         </div>
@@ -574,3 +591,29 @@
     </div>
     @endif
 </div>
+
+<script>
+    $('#printAudit').on('click', function () {
+        let iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+
+        document.body.appendChild(iframe);
+
+        iframe.onload = function () {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+
+            iframe.contentWindow.onafterprint = function () {
+                document.body.removeChild(iframe);
+            };
+        };
+
+        iframe.src = "{{ route('audits.print', $audit->id) }}";
+    });
+
+</script>

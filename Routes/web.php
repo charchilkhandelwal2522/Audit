@@ -47,6 +47,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
         ->name('audits.update-checkpoint');
     Route::post('audits/{audit}/complete', [AuditController::class, 'complete'])->name('audits.complete');
     Route::post('audits/{audit}/cancel', [AuditController::class, 'cancel'])->name('audits.cancel');
+    Route::get('audits/{id}/print', [AuditController::class, 'print'])->name('audits.print');
 
     // Audit Files
     Route::delete('audits/{audit}/files/{file}', [AuditController::class, 'deleteFile'])->name('audits.delete-file');

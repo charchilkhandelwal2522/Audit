@@ -425,6 +425,10 @@
         padding: 12px;
         font-weight: 500;
     }
+    .sidebar-photo {
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e3e6ef;
+    }
     .btn-submit-audit {
         background: #dc3545;
         border: none;
@@ -554,7 +558,14 @@
 
             <!-- Sidebar -->
             <div class="audit-sidebar">
-                <div class="sidebar-title">{{ $audit->template->title }}</div>
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                    <div class="sidebar-title mb-0 flex-grow-1">{{ $audit->template->title }}</div>
+                    @if($audit->photo)
+                        <a href="{{ asset('storage/' . $audit->photo) }}" target="_blank" class="flex-shrink-0">
+                            <img src="{{ asset('storage/' . $audit->photo) }}" alt="@lang('audit::app.photo')" class="img-fluid rounded border" style="width: 60px; height: 60px; object-fit: cover;">
+                        </a>
+                    @endif
+                </div>
 
                 <div class="sidebar-info">
                     <div class="sidebar-info-row">

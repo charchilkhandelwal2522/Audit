@@ -63,10 +63,43 @@
                         </div>
                     </div>
 
+                    <div class="mb-4">
+                        <h5 class="f-15 font-weight-bold text-dark mb-3">
+                            <span class="badge badge-primary rounded-circle mr-2"
+                                  style="width: 24px; height: 24px; line-height: 16px;">3</span>
+                            @lang('audit::app.uploadPhoto')
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <!-- Camera buttons -->
+                                <button type="button" class="btn btn-sm btn-primary" id="openCamera">
+                                    <i class="fa fa-camera"></i> Take Photo
+                                </button>
+                                <button type="button" class="btn btn-sm btn-success d-none" id="capturePhoto">
+                                    Capture
+                                </button>
+
+                            </div>
+
+                            <div class="col-md-6">
+                                <video id="cameraStream" class="d-none" width="25%" autoplay></video>
+                                <canvas id="photoCanvas" class="d-none"></canvas>
+
+                                <img id="audit-photo-preview"
+                                     class="img-thumbnail mt-2 d-none"
+                                     style="max-height: 180px;">
+                            </div>
+
+                            <input type="file" name="audit_photo" id="audit_photo" class="d-none">
+
+                        </div>
+                    </div>
+
                     <!-- Section 3: Review and Begin -->
                     <div class="mb-3">
                         <h5 class="f-15 font-weight-bold text-dark mb-3">
-                            <span class="badge badge-primary rounded-circle mr-2" style="width: 24px; height: 24px; line-height: 16px;">3</span>
+                            <span class="badge badge-primary rounded-circle mr-2" style="width: 24px; height: 24px; line-height: 16px;">4</span>
                             @lang('audit::app.reviewAndBegin')
                         </h5>
                         <div class="bg-light border rounded p-3">
@@ -91,68 +124,121 @@
 </div>
 
 <style>
-.template-card {
-    border: 2px solid #e3e6ef;
-    border-radius: 8px;
-    padding: 15px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    height: 100%;
-    background: #fff;
-}
-.template-card:hover {
-    border-color: #99a5b5;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-.template-card.selected {
-    border-color: var(--header_color);
-    background-color: rgba(var(--header_color_rgb), 0.03);
-}
-.template-card .template-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-}
-.template-card .template-title {
-    font-weight: 600;
-    font-size: 14px;
-    color: #333;
-    margin-bottom: 5px;
-}
-.template-card .template-desc {
-    font-size: 12px;
-    color: #6c757d;
-    margin-bottom: 10px;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-height: 3.6em; /* Approximately 3 lines with line-height 1.4 */
-}
-.template-card .template-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.template-card .checkpoint-badge {
-    font-size: 11px;
-    color: #6c757d;
-}
-.template-card .status-badge {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 4px;
-}
+    .template-card {
+        border: 2px solid #e3e6ef;
+        border-radius: 8px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        height: 100%;
+        background: #fff;
+    }
+    .template-card:hover {
+        border-color: #99a5b5;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .template-card.selected {
+        border-color: var(--header_color);
+        background-color: rgba(var(--header_color_rgb), 0.03);
+    }
+    .template-card .template-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    .template-card .template-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    .template-card .template-desc {
+        font-size: 12px;
+        color: #6c757d;
+        margin-bottom: 10px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-height: 3.6em; /* Approximately 3 lines with line-height 1.4 */
+    }
+    .template-card .template-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .template-card .checkpoint-badge {
+        font-size: 11px;
+        color: #6c757d;
+    }
+    .template-card .status-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
 </style>
 
 <script>
 $(document).ready(function() {
+
+    let stream = null;
+
+    // Open camera
+    $('#openCamera').on('click', async function () {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+
+            $('#cameraStream')
+                .removeClass('d-none')
+                .get(0).srcObject = stream;
+
+            $('#capturePhoto').removeClass('d-none');
+            $('#audit-photo-preview').addClass('d-none');
+
+        } catch (err) {
+            alert('Camera access denied');
+        }
+    });
+
+    // Capture photo
+    $('#capturePhoto').on('click', function () {
+        const video = document.getElementById('cameraStream');
+        const canvas = document.getElementById('photoCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+
+        // Stop camera
+        stream.getTracks().forEach(track => track.stop());
+
+        // Convert canvas to file
+        canvas.toBlob(blob => {
+            const file = new File([blob], 'audit_photo.png', { type: 'image/png' });
+
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+
+            // attach file to hidden input
+            document.getElementById('audit_photo').files = dataTransfer.files;
+
+            $('#audit-photo-preview')
+                .attr('src', URL.createObjectURL(blob))
+                .removeClass('d-none');
+
+            $('#cameraStream').addClass('d-none');
+            $('#capturePhoto').addClass('d-none');
+        });
+
+    });
+
     // Department change - load templates and employees
     $(document).on('change', '#department_id', function () {
         const departmentId = $(this).val();
@@ -271,7 +357,8 @@ $(document).ready(function() {
             disableButton: true,
             blockUI: true,
             buttonSelector: "#start-audit",
-            data: $('#start-audit-form').serialize(),
+            file: true,
+            data: {},
             success: function(response) {
                 if (response.status == 'success') {
                     window.location.href = response.redirectUrl;

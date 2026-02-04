@@ -245,5 +245,6 @@ return [
     'totalCheckpoints' => 'Total Checkpoints',
     'generatedOn' => 'Generated On',
     'checkpointDetails' => 'Checkpoint Details',
+    'uploadPhoto' => 'Upload Photo',
 ];
 

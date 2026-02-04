@@ -88,6 +88,12 @@ class AuditController extends AccountBaseController
         $audit->started_at = now();
         $audit->total_checkpoints = $template->checkpoints->count();
         $audit->added_by = user()->id;
+
+        if ($request->hasFile('audit_photo')) {
+            $path = $request->file('audit_photo')->store('audit-photos', 'public');
+            $audit->photo = $path;
+        }
+
         $audit->save();
 
         // Create checkpoint responses
@@ -396,6 +402,30 @@ class AuditController extends AccountBaseController
         $pdf->loadView('audit::audits.pdf.report', ['audit' => $audit]);
 
         return $pdf->download('audit-report-' . $audit->id . '.pdf');
+    }
+
+    public function print($id)
+    {
+        $viewPermission = user()->permission('view_audit');
+        abort_403($viewPermission == 'none');
+
+        $audit = Audit::with([
+            'template',
+            'department',
+            'auditor',
+            'auditee',
+            'responses.checkpoint',
+            'responses.files',
+        ])->findOrFail($id);
+
+        if ($viewPermission == 'owned') {
+            abort_403(
+                $audit->auditor_id != user()->id &&
+                $audit->auditee_id != user()->id
+            );
+        }
+
+        return view('audit::audits.pdf.report', compact('audit'));
     }
 
     /**

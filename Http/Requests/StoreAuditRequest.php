@@ -23,6 +23,7 @@ class StoreAuditRequest extends FormRequest
             'audit_template_id' => 'required|exists:audit_templates,id',
             'department_id' => 'required|exists:teams,id',
             'auditee_id' => 'required|exists:users,id',
+            'audit_photo'   => 'required|image|mimes:jpg,jpeg,png|max:4096',
             'location' => 'nullable|string|max:255',
         ];
     }
