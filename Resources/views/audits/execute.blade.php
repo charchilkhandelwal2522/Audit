@@ -497,37 +497,37 @@
                             @endif
 
                             <!-- Upload Evidence -->
-                            @if($response->checkpoint->requires_file_upload || $response->checkpoint->requires_photo)
-                                <div class="upload-section">
-                                    <div class="upload-title">
-                                        @lang('audit::app.uploadEvidence')
+                            <div class="upload-section">
+                                <div class="upload-title">
+                                    @lang('audit::app.uploadEvidence')
+                                    @if($response->checkpoint->requires_file_upload || $response->checkpoint->requires_photo)
                                         <span class="required">(@lang('audit::app.photoRequired'))</span>
-                                    </div>
-                                    <div class="dropzone-area" id="dropzone-{{ $response->id }}" data-response-id="{{ $response->id }}">
-                                        <div class="dropzone-icon"><i class="fa fa-cloud-upload-alt"></i></div>
-                                        <div class="dropzone-text">@lang('audit::app.dragDropText')</div>
-                                        <div class="dropzone-hint">@lang('audit::app.maxFileSize')</div>
-                                    </div>
-                                    <input type="file" name="files_{{ $response->id }}[]" id="file-input-{{ $response->id }}" multiple @if($response->checkpoint->requires_photo) accept="image/*" @endif style="display: none;">
-                                    <div class="uploaded-files" id="uploaded-files-{{ $response->id }}">
-                                        @foreach($response->files as $file)
-                                            <div class="uploaded-file" id="file-{{ $file->id }}">
-                                                @if($file->isImage())
-                                                    <img src="{{ $file->file_url }}" alt="{{ $file->filename }}">
-                                                @else
-                                                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
-                                                        <i class="fa {{ $file->icon }} fa-2x text-secondary"></i>
-                                                    </div>
-                                                @endif
-                                                <div class="file-overlay">{{ $file->filename }}</div>
-                                                <button type="button" class="delete-btn" data-file-id="{{ $file->id }}" data-audit-id="{{ $audit->id }}">
-                                                    <i class="fa fa-times"></i>
-                                                </button>
-                                            </div>
-                                        @endforeach
-                                    </div>
+                                    @endif
                                 </div>
-                            @endif
+                                <div class="dropzone-area" id="dropzone-{{ $response->id }}" data-response-id="{{ $response->id }}">
+                                    <div class="dropzone-icon"><i class="fa fa-cloud-upload-alt"></i></div>
+                                    <div class="dropzone-text">@lang('audit::app.dragDropText')</div>
+                                    <div class="dropzone-hint">@lang('audit::app.maxFileSize')</div>
+                                </div>
+                                <input type="file" name="files_{{ $response->id }}[]" id="file-input-{{ $response->id }}" multiple @if($response->checkpoint->requires_photo) accept="image/*" @endif style="display: none;">
+                                <div class="uploaded-files" id="uploaded-files-{{ $response->id }}">
+                                    @foreach($response->files as $file)
+                                        <div class="uploaded-file" id="file-{{ $file->id }}">
+                                            @if($file->isImage())
+                                                <img src="{{ $file->file_url }}" alt="{{ $file->filename }}">
+                                            @else
+                                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
+                                                    <i class="fa {{ $file->icon }} fa-2x text-secondary"></i>
+                                                </div>
+                                            @endif
+                                            <div class="file-overlay">{{ $file->filename }}</div>
+                                            <button type="button" class="delete-btn" data-file-id="{{ $file->id }}" data-audit-id="{{ $audit->id }}">
+                                                <i class="fa fa-times"></i>
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
 
                             <!-- Optional Comments -->
                             <div class="comments-section">
@@ -535,7 +535,7 @@
                                     @if($response->checkpoint->requires_notes)
                                         @lang('audit::app.requiredComments')<span class="text-danger">*</span>
                                     @else
-                                    @lang('audit::app.optionalComments')
+                                        @lang('audit::app.optionalComments')
                                     @endif
                                 </div>
                                 <textarea class="comments-textarea" name="notes_{{ $response->id }}" id="notes_{{ $response->id }}" placeholder="@lang('audit::app.addNotesPlaceholder')">{{ $response->notes }}</textarea>
