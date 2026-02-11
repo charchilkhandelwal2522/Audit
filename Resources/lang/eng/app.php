@@ -129,6 +129,7 @@ return [
     'cancelAuditConfirmText' => 'This action cannot be undone. All progress will be lost.',
     'yesCancel' => 'Yes, Cancel',
     'completeMandatoryFirst' => 'Please complete all mandatory checkpoints before finishing the audit.',
+    'completeAllCheckpointsFirst' => 'Please set a completion status (Completed, Partial, or Not Completed) for all checkpoints before submitting the audit.',
     'photoRequiredFor' => 'Photo is required for: :checkpoint',
     'fileRequiredFor' => 'File upload is required for: :checkpoint',
     'notesRequiredFor' => 'Notes are required for: :checkpoint',

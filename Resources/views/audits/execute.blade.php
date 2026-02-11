@@ -438,6 +438,17 @@
         background: #c82333;
         color: #fff;
     }
+    .btn-submit-audit:disabled,
+    .btn-submit-audit.btn-disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: #6c757d;
+    }
+    .btn-submit-audit:disabled:hover,
+    .btn-submit-audit.btn-disabled:hover {
+        background: #6c757d;
+        color: #fff;
+    }
     .btn-save-exit {
         background: #fff;
         border: 1px solid #e3e6ef;
@@ -639,7 +650,7 @@
                 </div>
 
                 <div class="sidebar-actions">
-                    <button type="button" class="btn btn-submit-audit" id="submit-audit">
+                    <button type="button" class="btn btn-submit-audit" id="submit-audit" title="@lang('audit::app.completeAllCheckpointsFirst')">
                         @lang('audit::app.submitAudit')
                     </button>
                     <button type="button" class="btn btn-save-exit" id="save-exit">
@@ -678,6 +689,30 @@
         setInterval(updateTimer, 1000);
         updateTimer();
 
+        const validStatuses = ['completed', 'partially_completed', 'not_completed'];
+
+        function allCheckpointsHaveStatus() {
+            for (let i = 0; i < responses.length; i++) {
+                const val = $('#status_' + responses[i]).val() || '';
+                if (validStatuses.indexOf(val) === -1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function updateSubmitButtonState() {
+            const canSubmit = allCheckpointsHaveStatus();
+            const $btn = $('#submit-audit');
+            if (canSubmit) {
+                $btn.prop('disabled', false).removeClass('btn-disabled').attr('title', '');
+            } else {
+                $btn.prop('disabled', true).addClass('btn-disabled').attr('title', '@lang("audit::app.completeAllCheckpointsFirst")');
+            }
+        }
+
+        updateSubmitButtonState();
+
         // Status button click
         $(document).on('click', '.status-btn', function() {
             const $this = $(this);
@@ -693,6 +728,8 @@
 
             // Auto-save
             saveCheckpoint(responseId);
+
+            updateSubmitButtonState();
         });
 
         // Dropzone click
@@ -975,9 +1012,23 @@
             showStep(index);
         });
 
-        // Submit audit
+        // Submit audit (only when all checkpoints have a status)
         $('#submit-audit').on('click', function() {
-            // Save current checkpoint first
+            if ($(this).prop('disabled')) {
+                return;
+            }
+
+            if (!allCheckpointsHaveStatus()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '@lang("audit::app.completeAllCheckpointsFirst")',
+                    text: '@lang("audit::app.completeAllCheckpointsFirst")',
+                    customClass: { confirmButton: 'btn btn-primary' },
+                    buttonsStyling: false
+                });
+                return;
+            }
+
             const currentResponseId = responses[currentIndex];
             saveCheckpoint(currentResponseId);
 

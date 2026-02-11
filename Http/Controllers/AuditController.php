@@ -256,6 +256,18 @@ class AuditController extends AccountBaseController
         // abort_403($audit->auditor_id != user()->id);
         // abort_403($audit->status != Audit::STATUS_IN_PROGRESS);
 
+        // Check that every checkpoint has a completion status (completed, partially_completed, or not_completed)
+        $validStatuses = ['completed', 'partially_completed', 'not_completed'];
+        $missingStatusCount = $audit->responses()
+            ->where(function ($q) use ($validStatuses) {
+                $q->whereNull('status')->orWhereNotIn('status', $validStatuses);
+            })
+            ->count();
+
+        if ($missingStatusCount > 0) {
+            return Reply::error(__('audit::app.completeAllCheckpointsFirst'));
+        }
+
         // Check if all mandatory checkpoints have been responded
         $mandatoryNotResponded = $audit->responses()
             ->whereNull('responded_at')
