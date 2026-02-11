@@ -46,6 +46,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     Route::post('audits/{audit}/checkpoint/{response}', [AuditController::class, 'updateCheckpointResponse'])
         ->name('audits.update-checkpoint');
     Route::post('audits/{audit}/complete', [AuditController::class, 'complete'])->name('audits.complete');
+    Route::post('audits/{audit}/pause', [AuditController::class, 'pause'])->name('audits.pause');
     Route::post('audits/{audit}/cancel', [AuditController::class, 'cancel'])->name('audits.cancel');
     Route::get('audits/{id}/print', [AuditController::class, 'print'])->name('audits.print');
 

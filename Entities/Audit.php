@@ -37,6 +37,8 @@ class Audit extends BaseModel
         'location',
         'status',
         'started_at',
+        'total_elapsed_seconds',
+        'resumed_at',
         'completed_at',
         'duration_seconds',
         'score',
@@ -51,7 +53,9 @@ class Audit extends BaseModel
 
     protected $casts = [
         'started_at' => 'datetime',
+        'resumed_at' => 'datetime',
         'completed_at' => 'datetime',
+        'total_elapsed_seconds' => 'integer',
         'score' => 'decimal:2',
         'total_checkpoints' => 'integer',
         'completed_checkpoints' => 'integer',
@@ -215,7 +219,9 @@ class Audit extends BaseModel
         $this->status = self::STATUS_COMPLETED;
         $this->completed_at = now();
 
-        if ($this->started_at) {
+        if ($this->resumed_at) {
+            $this->duration_seconds = (int) $this->total_elapsed_seconds + $this->resumed_at->diffInSeconds(now());
+        } elseif ($this->started_at) {
             $this->duration_seconds = $this->started_at->diffInSeconds(now());
         }
 

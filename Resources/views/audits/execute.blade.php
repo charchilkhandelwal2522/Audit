@@ -670,15 +670,20 @@
         const totalSteps = {{ $audit->responses->count() }};
         const responses = @json($audit->responses->pluck('id'));
 
-        // Timer
-        const startTime = new Date('{{ $audit->started_at->toISOString() }}');
+        // Timer (pauses on Save & Exit, resumes when Continue is clicked)
+        const timerTotalElapsedSeconds = {{ $audit->total_elapsed_seconds ?? 0 }};
+        const timerResumedAt = @json($audit->resumed_at?->toISOString());
 
         function updateTimer() {
-            const now = new Date();
-            const diff = Math.floor((now - startTime) / 1000);
-            const hours = Math.floor(diff / 3600);
-            const minutes = Math.floor((diff % 3600) / 60);
-            const seconds = diff % 60;
+            let totalSeconds = timerTotalElapsedSeconds;
+            if (timerResumedAt) {
+                const sessionStart = new Date(timerResumedAt);
+                const now = new Date();
+                totalSeconds += Math.floor((now - sessionStart) / 1000);
+            }
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
 
             $('#timer').text(
                 String(hours).padStart(2, '0') + ':' +
@@ -1067,15 +1072,22 @@
             });
         });
 
-        // Save and Exit
+        // Save and Exit (saves current checkpoint, pauses timer, then redirects)
         $('#save-exit').on('click', function() {
-            // Save current checkpoint first
             const currentResponseId = responses[currentIndex];
             saveCheckpoint(currentResponseId);
 
-            setTimeout(function() {
-                window.location.href = "{{ route('audits.index') }}";
-            }, 500);
+            $.ajax({
+                url: "{{ route('audits.pause', $audit->id) }}",
+                type: 'POST',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function() {
+                    window.location.href = "{{ route('audits.index') }}";
+                },
+                error: function() {
+                    window.location.href = "{{ route('audits.index') }}";
+                }
+            });
         });
     });
 </script>

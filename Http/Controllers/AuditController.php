@@ -86,6 +86,7 @@ class AuditController extends AccountBaseController
         $audit->location = $request->location;
         $audit->status = Audit::STATUS_IN_PROGRESS;
         $audit->started_at = now();
+        $audit->resumed_at = $audit->started_at;
         $audit->total_checkpoints = $template->checkpoints->count();
         $audit->added_by = user()->id;
 
@@ -171,9 +172,38 @@ class AuditController extends AccountBaseController
         abort_403($this->audit->auditor_id != user()->id);
         abort_403($this->audit->status != Audit::STATUS_IN_PROGRESS);
 
+        // Resume timer when continuing (Save & Exit had paused it)
+        if ($this->audit->resumed_at === null) {
+            if ($this->audit->total_elapsed_seconds == 0 && $this->audit->started_at) {
+                $this->audit->resumed_at = $this->audit->started_at;
+            } else {
+                $this->audit->resumed_at = now();
+            }
+            $this->audit->save();
+        }
+
         $this->pageTitle = __('audit::app.executeAudit') . ' - ' . $this->audit->template->title;
 
         return view('audit::audits.execute', $this->data);
+    }
+
+    /**
+     * Pause the audit timer (Save & Exit).
+     */
+    public function pause($id)
+    {
+        $audit = Audit::findOrFail($id);
+
+        abort_403($audit->auditor_id != user()->id);
+        abort_403($audit->status != Audit::STATUS_IN_PROGRESS);
+
+        $now = now();
+        $elapsedThisSession = $audit->resumed_at ? $audit->resumed_at->diffInSeconds($now) : 0;
+        $audit->total_elapsed_seconds = (int) $audit->total_elapsed_seconds + $elapsedThisSession;
+        $audit->resumed_at = null;
+        $audit->save();
+
+        return Reply::success(__('audit::app.auditPaused'));
     }
 
     /**

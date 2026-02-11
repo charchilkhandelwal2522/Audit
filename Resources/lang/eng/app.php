@@ -148,6 +148,7 @@ return [
     'finish' => 'Finish',
     'submitAudit' => 'Submit Audit',
     'saveAndExit' => 'Save & Exit',
+    'auditPaused' => 'Audit paused. Timer stopped. You can continue later.',
 
     // Export
     'exportPdf' => 'Export PDF',
