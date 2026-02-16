@@ -167,6 +167,7 @@ return [
     'pdfNotReady' => 'PDF is not ready yet.',
     'pdfFileNotFound' => 'PDF file not found.',
     'useGeneratePdfButton' => 'This audit has many files. Please use the Download PDF button to generate the report with progress.',
+    'preparingPrint' => 'Preparing print preview...',
     'exportError' => 'An error occurred while generating the PDF.',
     'evidenceAppendix' => 'Evidence Appendix',
 

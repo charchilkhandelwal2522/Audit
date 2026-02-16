@@ -5,9 +5,13 @@ namespace Modules\Audit\Http\Controllers;
 use App\Helper\Files;
 use App\Helper\Reply;
 use App\Http\Controllers\AccountBaseController;
+use App\Models\StorageSetting;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManagerStatic as Image;
 use Modules\Audit\DataTables\AuditDataTable;
 use Modules\Audit\Entities\Audit;
 use Modules\Audit\Entities\AuditCheckpointResponse;
@@ -463,6 +467,7 @@ class AuditController extends AccountBaseController
 
     /**
      * Download the generated PDF.
+     * Add ?inline=1 to open in browser (for print preview) instead of download.
      */
     public function exportPdfDownload($token)
     {
@@ -479,13 +484,13 @@ class AuditController extends AccountBaseController
             return Reply::error(__('audit::app.pdfFileNotFound'));
         }
 
-        $fullPath = storage_path('app/' . $path);
+        $content = \Illuminate\Support\Facades\Storage::disk('storage')->get($path);
+        $disposition = request('inline') ? 'inline' : 'attachment';
 
-        return \Illuminate\Support\Facades\Response::download(
-            $fullPath,
-            $filename,
-            ['Content-Type' => 'application/pdf']
-        );
+        return \Illuminate\Support\Facades\Response::make($content, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => $disposition . '; filename="' . $filename . '"',
+        ]);
     }
 
     /**
@@ -525,6 +530,9 @@ class AuditController extends AccountBaseController
 
     public function print($id)
     {
+        set_time_limit(600);
+        @ini_set('memory_limit', '512M');
+
         $viewPermission = user()->permission('view_audit');
         abort_403($viewPermission == 'none');
 
@@ -544,7 +552,62 @@ class AuditController extends AccountBaseController
             );
         }
 
-        return view('audit::audits.pdf.report', compact('audit'));
+        $embedMap = $this->buildPrintEmbedMap($audit);
+
+        return view('audit::audits.pdf.preview', compact('audit', 'embedMap'));
+    }
+
+    /**
+     * Build embed map with base64 data URLs for print view (resized images for fast loading).
+     */
+    protected function buildPrintEmbedMap(Audit $audit): array
+    {
+        $embedMap = [];
+        $maxDimension = 300;
+        $quality = 75;
+        $path = 'audit-files/';
+
+        foreach ($audit->responses as $response) {
+            foreach ($response->files as $file) {
+                if (! $file->isImage()) {
+                    continue;
+                }
+
+                $content = null;
+                if (in_array(config('filesystems.default'), StorageSetting::S3_COMPATIBLE_STORAGE)) {
+                    try {
+                        $content = Storage::disk(config('filesystems.default'))->get($path . $file->hashname);
+                    } catch (\Throwable) {
+                        continue;
+                    }
+                } else {
+                    $localPath = public_path(Files::UPLOAD_FOLDER . '/' . $path . $file->hashname);
+                    if (! File::exists($localPath)) {
+                        continue;
+                    }
+                    $content = File::get($localPath);
+                }
+
+                $ext = strtolower(pathinfo($file->hashname, PATHINFO_EXTENSION));
+                if (! in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                    continue;
+                }
+
+                try {
+                    $img = Image::make($content)
+                        ->resize($maxDimension, $maxDimension, function ($c) {
+                            $c->aspectRatio();
+                            $c->upsize();
+                        })
+                        ->encode($ext === 'jpg' || $ext === 'jpeg' ? 'jpg' : $ext, $quality);
+                    $embedMap[$file->id] = 'data:' . ($img->mime() ?? 'image/jpeg') . ';base64,' . base64_encode((string) $img);
+                } catch (\Throwable) {
+                    continue;
+                }
+            }
+        }
+
+        return $embedMap;
     }
 
     /**

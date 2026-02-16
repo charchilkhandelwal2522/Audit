@@ -366,14 +366,16 @@
                 @endif
             </div>
             <div class="audit-actions d-flex align-items-center">
-                <button type="button" class="btn btn-print" id="printAudit">
-                    <i class="fa fa-print mr-1"></i> @lang('app.print')
+                <button type="button" class="btn btn-print" id="printAudit" data-audit-id="{{ $audit->id }}">
+                    <span id="printAuditIdle"><i class="fa fa-print mr-1"></i> @lang('app.print')</span>
+                    <span id="printAuditGenerating" style="display: none;"><i class="fa fa-spinner fa-spin mr-1"></i> <span id="printAuditProgressMsg">@lang('audit::app.preparingPrint')</span></span>
                 </button>
                 <button type="button" class="btn btn-download-pdf" id="downloadPdfAudit" data-audit-id="{{ $audit->id }}">
                     <span id="downloadPdfIdle"><i class="fa fa-download mr-1"></i> @lang('audit::app.downloadPdf')</span>
                     <span id="downloadPdfGenerating" style="display: none;"><i class="fa fa-spinner fa-spin mr-1"></i> <span id="downloadPdfProgressMsg">@lang('audit::app.generatingPdf')</span></span>
                 </button>
                 <span id="downloadPdfError" class="text-danger small ml-2" style="display: none;"></span>
+                <span id="printAuditError" class="text-danger small ml-2" style="display: none;"></span>
             </div>
         </div>
 
@@ -596,27 +598,78 @@
 
 <script>
     $('#printAudit').on('click', function () {
-        let iframe = document.createElement('iframe');
-        iframe.style.position = 'fixed';
-        iframe.style.right = '0';
-        iframe.style.bottom = '0';
-        iframe.style.width = '0';
-        iframe.style.height = '0';
-        iframe.style.border = '0';
+        var $btn = $(this);
+        if ($('#printAuditGenerating').is(':visible')) return;
 
-        document.body.appendChild(iframe);
+        $btn.prop('disabled', true);
+        $('#printAuditIdle').hide();
+        $('#printAuditGenerating').show();
+        $('#printAuditError').hide().text('');
 
-        iframe.onload = function () {
-            iframe.contentWindow.focus();
-            iframe.contentWindow.print();
-
-            iframe.contentWindow.onafterprint = function () {
-                document.body.removeChild(iframe);
-            };
-        };
-
-        iframe.src = "{{ route('audits.print', $audit->id) }}";
+        $.ajax({
+            url: "{{ url('account/audits') }}/" + $btn.data('audit-id') + "/export-pdf/start",
+            type: 'POST',
+            data: { _token: '{{ csrf_token() }}' },
+            success: function (response) {
+                if (response.status === 'success' && response.export_token) {
+                    pollPdfStatusForPrint(response.export_token);
+                } else {
+                    resetPrintBtn();
+                    $('#printAuditError').text(response.message || '{{ __("audit::app.exportError") }}').show();
+                }
+            },
+            error: function (xhr) {
+                resetPrintBtn();
+                var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : '{{ __("audit::app.exportError") }}';
+                $('#printAuditError').text(msg).show();
+            }
+        });
     });
+
+    function resetPrintBtn() {
+        $('#printAudit').prop('disabled', false);
+        $('#printAuditIdle').show();
+        $('#printAuditGenerating').hide();
+    }
+
+    function pollPdfStatusForPrint(token) {
+        var $progressMsg = $('#printAuditProgressMsg');
+        var $error = $('#printAuditError');
+
+        $.ajax({
+            url: "{{ url('account/audits/export-pdf/status') }}/" + token,
+            type: 'GET',
+            success: function (response) {
+                if (response.status === 'fail') {
+                    resetPrintBtn();
+                    $error.text(response.message || '{{ __("audit::app.exportError") }}').show();
+                    return;
+                }
+                $progressMsg.text(response.message || '{{ __("audit::app.preparingPrint") }}');
+                if (response.status === 'ready') {
+                    var printUrl = "{{ url('account/audits/export-pdf/download') }}/" + token + "?inline=1";
+                    var iframe = document.createElement('iframe');
+                    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+                    document.body.appendChild(iframe);
+                    iframe.onload = function () {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                        iframe.contentWindow.onafterprint = function () { document.body.removeChild(iframe); };
+                    };
+                    iframe.src = printUrl;
+                    resetPrintBtn();
+                    return;
+                }
+                if (response.status === 'failed') {
+                    resetPrintBtn();
+                    $error.text(response.error || response.message || '{{ __("audit::app.exportError") }}').show();
+                    return;
+                }
+                setTimeout(function () { pollPdfStatusForPrint(token); }, 1500);
+            },
+            error: function () { setTimeout(function () { pollPdfStatusForPrint(token); }, 2000); }
+        });
+    }
 
     $('#downloadPdfAudit').on('click', function () {
         let $btn = $(this);
