@@ -419,7 +419,77 @@ class AuditController extends AccountBaseController
     }
 
     /**
-     * Export audit report.
+     * Start async PDF export (for audits with many files - avoids timeout).
+     */
+    public function startExportPdf($id)
+    {
+        $viewPermission = user()->permission('view_audit');
+        abort_403($viewPermission == 'none');
+
+        $audit = Audit::findOrFail($id);
+
+        if ($viewPermission == 'owned') {
+            abort_403($audit->auditor_id != user()->id && $audit->auditee_id != user()->id);
+        }
+
+        $exportToken = 'audit_' . $audit->id . '_' . uniqid();
+
+        \Illuminate\Support\Facades\Cache::put('audit_pdf_export_' . $exportToken, [
+            'progress' => 0,
+            'message' => __('audit::app.loadingData'),
+            'status' => 'processing',
+        ], \Modules\Audit\Jobs\ExportAuditPdfJob::CACHE_TTL);
+
+        \Modules\Audit\Jobs\ExportAuditPdfJob::dispatch($audit->id, $exportToken, user()->id);
+
+        return Reply::successWithData(__('audit::app.pdfExportStarted'), [
+            'export_token' => $exportToken,
+        ]);
+    }
+
+    /**
+     * Get PDF export progress/status.
+     */
+    public function exportPdfStatus($token)
+    {
+        $data = \Illuminate\Support\Facades\Cache::get('audit_pdf_export_' . $token);
+
+        if (!$data) {
+            return Reply::error(__('audit::app.exportNotFound'));
+        }
+
+        return Reply::dataOnly($data);
+    }
+
+    /**
+     * Download the generated PDF.
+     */
+    public function exportPdfDownload($token)
+    {
+        $data = \Illuminate\Support\Facades\Cache::get('audit_pdf_export_' . $token);
+
+        if (!$data || ($data['status'] ?? '') !== 'ready') {
+            return Reply::error(__('audit::app.pdfNotReady'));
+        }
+
+        $path = $data['download_path'] ?? null;
+        $filename = $data['filename'] ?? 'audit-report.pdf';
+
+        if (!$path || !\Illuminate\Support\Facades\Storage::disk('storage')->exists($path)) {
+            return Reply::error(__('audit::app.pdfFileNotFound'));
+        }
+
+        $fullPath = storage_path('app/' . $path);
+
+        return \Illuminate\Support\Facades\Response::download(
+            $fullPath,
+            $filename,
+            ['Content-Type' => 'application/pdf']
+        );
+    }
+
+    /**
+     * Export audit report (direct download - for small audits or when queue is sync).
      */
     public function exportPdf($id)
     {
@@ -439,7 +509,15 @@ class AuditController extends AccountBaseController
             abort_403($audit->auditor_id != user()->id && $audit->auditee_id != user()->id);
         }
 
+        $totalFiles = $audit->responses->sum(fn ($r) => $r->files->count());
+
+        // For audits with many files, use the async flow (startExportPdf + progress modal)
+        if ($totalFiles > 30) {
+            return Reply::error(__('audit::app.useGeneratePdfButton'));
+        }
+
         $pdf = app('dompdf.wrapper');
+        $pdf->setOption('isRemoteEnabled', true);
         $pdf->loadView('audit::audits.pdf.report', ['audit' => $audit]);
 
         return $pdf->download('audit-report-' . $audit->id . '.pdf');

@@ -153,6 +153,22 @@ return [
     // Export
     'exportPdf' => 'Export PDF',
     'downloadPdf' => 'Download PDF',
+    'pdfExportStarted' => 'PDF generation started. Please wait...',
+    'generatingPdf' => 'Generating PDF Report',
+    'pleaseWait' => 'Please wait...',
+    'loadingData' => 'Loading audit data...',
+    'preparingImages' => 'Preparing images (:current/:total)...',
+    'generatingReport' => 'Generating report...',
+    'processingImages' => 'Processing images (:current/:total)...',
+    'savingPdf' => 'Saving PDF...',
+    'mergingPdf' => 'Merging PDF...',
+    'pdfReady' => 'PDF is ready for download.',
+    'exportNotFound' => 'Export session not found or expired.',
+    'pdfNotReady' => 'PDF is not ready yet.',
+    'pdfFileNotFound' => 'PDF file not found.',
+    'useGeneratePdfButton' => 'This audit has many files. Please use the Download PDF button to generate the report with progress.',
+    'exportError' => 'An error occurred while generating the PDF.',
+    'evidenceAppendix' => 'Evidence Appendix',
 
     // Result Page
     'completedOn' => 'Completed on',

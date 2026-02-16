@@ -365,13 +365,15 @@
                     </div>
                 @endif
             </div>
-            <div class="audit-actions">
+            <div class="audit-actions d-flex align-items-center">
                 <button type="button" class="btn btn-print" id="printAudit">
                     <i class="fa fa-print mr-1"></i> @lang('app.print')
                 </button>
-                <a href="{{ route('audits.export-pdf', $audit->id) }}" class="btn btn-download-pdf">
-                    <i class="fa fa-download mr-1"></i> @lang('audit::app.downloadPdf')
-                </a>
+                <button type="button" class="btn btn-download-pdf" id="downloadPdfAudit" data-audit-id="{{ $audit->id }}">
+                    <span id="downloadPdfIdle"><i class="fa fa-download mr-1"></i> @lang('audit::app.downloadPdf')</span>
+                    <span id="downloadPdfGenerating" style="display: none;"><i class="fa fa-spinner fa-spin mr-1"></i> <span id="downloadPdfProgressMsg">@lang('audit::app.generatingPdf')</span></span>
+                </button>
+                <span id="downloadPdfError" class="text-danger small ml-2" style="display: none;"></span>
             </div>
         </div>
 
@@ -571,7 +573,7 @@
                 $isPass = $score >= 60;
             @endphp
             <div class="audit-history-item" style="background: #fff; border: 1px solid #e3e6ef; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 20px; transition: all 0.2s;">
-                <div class="score-badge-history" style="width: 56px; height: 56px; background: {{ $isPass ? '#d1fae5' : '#fee2e2' }}; color: {{ $isPass ? '#10b981' : '#ef4444' }}; border-radius: %; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0;">
+                <div class="score-badge-history" style="width: 56px; height: 56px; background: {{ $isPass ? '#d1fae5' : '#fee2e2' }}; color: {{ $isPass ? '#10b981' : '#ef4444' }}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0;">
                     {{ $score }}%
                 </div>
                 <div style="flex: 1; min-width: 0;">
@@ -616,4 +618,92 @@
         iframe.src = "{{ route('audits.print', $audit->id) }}";
     });
 
+    $('#downloadPdfAudit').on('click', function () {
+        let $btn = $(this);
+        let auditId = $btn.data('audit-id');
+        let $idle = $('#downloadPdfIdle');
+        let $generating = $('#downloadPdfGenerating');
+        let $progressMsg = $('#downloadPdfProgressMsg');
+        let $error = $('#downloadPdfError');
+
+        if ($generating.is(':visible')) return;
+
+        $btn.prop('disabled', true);
+        $idle.hide();
+        $generating.show();
+        $error.hide().text('');
+        $progressMsg.text('{{ __("audit::app.pleaseWait") }}');
+
+        $.ajax({
+            url: "{{ url('account/audits') }}/" + auditId + "/export-pdf/start",
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function (response) {
+                if (response.status === 'success' && response.export_token) {
+                    pollPdfStatus(response.export_token);
+                } else {
+                    resetDownloadBtn();
+                    $error.text(response.message || '{{ __("audit::app.exportError") }}').show();
+                }
+            },
+            statusCode: {
+                403: function() {
+                    resetDownloadBtn();
+                    $error.text('{{ __("app.unauthorized") }}').show();
+                }
+            },
+            error: function (xhr) {
+                resetDownloadBtn();
+                let msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : '{{ __("audit::app.exportError") }}';
+                $error.text(msg).show();
+            }
+        });
+    });
+
+    function resetDownloadBtn() {
+        $('#downloadPdfAudit').prop('disabled', false);
+        $('#downloadPdfIdle').show();
+        $('#downloadPdfGenerating').hide();
+    }
+
+    function pollPdfStatus(token) {
+        let $progressMsg = $('#downloadPdfProgressMsg');
+        let $error = $('#downloadPdfError');
+
+        $.ajax({
+            url: "{{ url('account/audits/export-pdf/status') }}/" + token,
+            type: 'GET',
+            success: function (response) {
+                if (response.status === 'fail') {
+                    resetDownloadBtn();
+                    $error.text(response.message || '{{ __("audit::app.exportError") }}').show();
+                    return;
+                }
+
+                let message = response.message || '';
+                let status = response.status || '';
+
+                $progressMsg.text(message);
+
+                if (status === 'ready') {
+                    window.location.href = "{{ url('account/audits/export-pdf/download') }}/" + token;
+                    resetDownloadBtn();
+                    return;
+                }
+
+                if (status === 'failed') {
+                    resetDownloadBtn();
+                    $error.text(response.error || message || '{{ __("audit::app.exportError") }}').show();
+                    return;
+                }
+
+                setTimeout(function () { pollPdfStatus(token); }, 1500);
+            },
+            error: function () {
+                setTimeout(function () { pollPdfStatus(token); }, 2000);
+            }
+        });
+    }
 </script>

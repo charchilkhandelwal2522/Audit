@@ -60,6 +60,9 @@
             border-collapse: collapse;
             margin-bottom: 20px;
         }
+        .checkpoint-table thead {
+            display: table-header-group;
+        }
         .checkpoint-table th {
             background-color: #f8f9fa;
             padding: 10px;
@@ -70,6 +73,11 @@
             padding: 10px;
             border: 1px solid #dee2e6;
             vertical-align: top;
+            page-break-inside: auto;
+            overflow: visible;
+        }
+        .checkpoint-table tbody tr {
+            page-break-inside: auto;
         }
         .status-completed {
             color: #155724;
@@ -92,18 +100,21 @@
         .file-list {
             margin-top: 8px;
             font-size: 10px;
+            page-break-inside: auto;
         }
         .file-item {
             margin-bottom: 6px;
             padding: 6px;
             background-color: #f8f9fa;
             border-left: 3px solid #007bff;
-            page-break-inside: avoid;
+            page-break-inside: auto;
         }
         .file-item-image {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             text-align: center;
+            page-break-inside: avoid;
+            page-break-after: auto;
         }
         .file-item-image img {
             max-width: 120px;
@@ -111,6 +122,9 @@
             border: 1px solid #dee2e6;
             padding: 3px;
             background-color: #fff;
+        }
+        .file-cell {
+            page-break-inside: auto;
         }
         .file-item-image small {
             display: block;
@@ -230,7 +244,58 @@
             </tr>
         </thead>
         <tbody>
+            @php $embedMap = $embedMap ?? []; @endphp
             @foreach($audit->responses as $index => $response)
+            @php
+                $files = $response->files ?? collect();
+                $fileCount = $files->count();
+            @endphp
+            @if($fileCount > 0)
+                @foreach($files as $fileIndex => $file)
+                <tr>
+                    @if($fileIndex === 0)
+                        <td rowspan="{{ $fileCount }}">{{ $index + 1 }}</td>
+                        <td rowspan="{{ $fileCount }}">
+                            <strong>{{ $response->checkpoint->title }}</strong>
+                            @if($response->checkpoint->description)
+                                <br><small>{{ $response->checkpoint->description }}</small>
+                            @endif
+                        </td>
+                        <td rowspan="{{ $fileCount }}">
+                            @if($response->status == 'completed')
+                                @lang('audit::app.completed')
+                            @elseif($response->status == 'partially_completed')
+                                @lang('audit::app.partiallyCompleted')
+                            @else
+                                @lang('audit::app.notCompleted')
+                            @endif
+                        </td>
+                        <td rowspan="{{ $fileCount }}">{{ $response->notes ?: '--' }}</td>
+                    @endif
+                    <td class="file-cell">
+                        @if($file->isImage())
+                            @if(!empty($embedMap[$file->id]))
+                                <div class="file-item-image">
+                                    <img src="file://{{ str_replace('\\', '/', $embedMap[$file->id]) }}" alt="{{ $file->filename }}" />
+                                </div>
+                            @elseif(empty($embedMap))
+                                <div class="file-item-image">
+                                    <img src="{{ $file->file_url }}" alt="{{ $file->filename }}" />
+                                </div>
+                            @else
+                                <div class="file-item"><span class="file-icon">🖼</span> {{ $file->filename }}</div>
+                            @endif
+                        @else
+                            <div class="file-item">
+                                <span class="file-icon">📎</span>
+                                <span class="file-link">{{ $file->filename }}</span>
+                                <span class="file-size">({{ $file->formatted_size }})</span>
+                            </div>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            @else
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>
@@ -249,31 +314,9 @@
                     @endif
                 </td>
                 <td>{{ $response->notes ?: '--' }}</td>
-                <td>
-                    @if($response->files && $response->files->count() > 0)
-                        <div class="file-list">
-                            @foreach($response->files as $file)
-                                @if($file->isImage())
-                                    <div class="file-item-image">
-                                        <img src="{{ $file->file_url }}" alt="{{ $file->filename }}" />
-                                        {{-- <small>{{ $file->filename }}</small> --}}
-                                    </div>
-                                @else
-                                    <div class="file-item">
-                                        <span class="file-icon">📎</span>
-                                        <a href="{{ $file->file_url }}" class="file-link" target="_blank">
-                                            {{ $file->filename }}
-                                        </a>
-                                        <span class="file-size">({{ $file->formatted_size }})</span>
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-                    @else
-                        <span style="color: #6c757d;">--</span>
-                    @endif
-                </td>
+                <td><span style="color: #6c757d;">--</span></td>
             </tr>
+            @endif
             @endforeach
         </tbody>
     </table>

@@ -53,7 +53,10 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     // Audit Files
     Route::delete('audits/{audit}/files/{file}', [AuditController::class, 'deleteFile'])->name('audits.delete-file');
 
-    // Audit Export
+    // Audit Export (async with progress)
+    Route::post('audits/{audit}/export-pdf/start', [AuditController::class, 'startExportPdf'])->name('audits.export-pdf.start');
+    Route::get('audits/export-pdf/status/{token}', [AuditController::class, 'exportPdfStatus'])->name('audits.export-pdf.status');
+    Route::get('audits/export-pdf/download/{token}', [AuditController::class, 'exportPdfDownload'])->name('audits.export-pdf.download');
     Route::get('audits/{audit}/export-pdf', [AuditController::class, 'exportPdf'])->name('audits.export-pdf');
 
     // My Audits (for auditees)
