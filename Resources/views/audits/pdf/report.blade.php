@@ -59,6 +59,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            table-layout: fixed;
         }
         .checkpoint-table thead {
             display: table-header-group;
@@ -125,6 +126,12 @@
         }
         .file-cell {
             page-break-inside: auto;
+        }
+        .file-row-spacer {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            background-color: #fff;
+            vertical-align: top;
         }
         .file-item-image small {
             display: block;
@@ -234,13 +241,20 @@
     <!-- Checkpoint Details -->
     <h3 class="section-title">@lang('audit::app.checkpointDetails')</h3>
     <table class="checkpoint-table">
+        <colgroup>
+            <col style="width:5%;">
+            <col style="width:25%;">
+            <col style="width:12%;">
+            <col style="width:28%;">
+            <col style="width:30%;">
+        </colgroup>
         <thead>
             <tr>
-                <th width="5%">#</th>
-                <th width="25%">@lang('audit::app.checkpoint')</th>
-                <th width="12%">@lang('app.status')</th>
-                <th width="28%">@lang('app.notes')</th>
-                <th width="30%">@lang('audit::app.files')</th>
+                <th>#</th>
+                <th>@lang('audit::app.checkpoint')</th>
+                <th>@lang('app.status')</th>
+                <th>@lang('app.notes')</th>
+                <th>@lang('audit::app.files')</th>
             </tr>
         </thead>
         <tbody>
@@ -254,14 +268,14 @@
                 @foreach($files as $fileIndex => $file)
                 <tr>
                     @if($fileIndex === 0)
-                        <td rowspan="{{ $fileCount }}">{{ $index + 1 }}</td>
-                        <td rowspan="{{ $fileCount }}">
+                        <td>{{ $index + 1 }}</td>
+                        <td>
                             <strong>{{ $response->checkpoint->title }}</strong>
                             @if($response->checkpoint->description)
                                 <br><small>{{ $response->checkpoint->description }}</small>
                             @endif
                         </td>
-                        <td rowspan="{{ $fileCount }}">
+                        <td>
                             @if($response->status == 'completed')
                                 @lang('audit::app.completed')
                             @elseif($response->status == 'partially_completed')
@@ -270,7 +284,12 @@
                                 @lang('audit::app.notCompleted')
                             @endif
                         </td>
-                        <td rowspan="{{ $fileCount }}">{{ $response->notes ?: '--' }}</td>
+                        <td>{{ $response->notes ?: '--' }}</td>
+                    @else
+                        <td class="file-row-spacer" style="width:5%;">&nbsp;</td>
+                        <td class="file-row-spacer" style="width:25%;">&nbsp;</td>
+                        <td class="file-row-spacer" style="width:12%;">&nbsp;</td>
+                        <td class="file-row-spacer" style="width:28%;">&nbsp;</td>
                     @endif
                     <td class="file-cell">
                         @if($file->isImage())
