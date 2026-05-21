@@ -6,7 +6,7 @@ Laravel module for internal audits, store checks, and department visits. Standar
 
 ## Description
 
-The Audit module plugs into a multi-company Laravel application (e.g. Worksuite). It lets auditors run structured checklists against departments and staff, attach photos and files as evidence, pause and resume timed sessions, and generate PDF reports. Managers get dashboards, summary reports, and optional alerts when scores fall below a threshold.
+The Audit module plugs into a multi-company Laravel application. It lets auditors run structured checklists against departments and staff, attach photos and files as evidence, pause and resume timed sessions, and generate PDF reports. Managers get dashboards, summary reports, and optional alerts when scores fall below a threshold.
 
 ## Features
 
