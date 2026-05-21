@@ -141,10 +141,11 @@ Audit/
 
 ## Repository
 
+**GitHub:** [https://github.com/charchilkhandelwal2522/Audit](https://github.com/charchilkhandelwal2522/Audit)
+
 ```bash
-git remote add origin https://gitlab.com/charchil_khandelwal22/audit.git
-git branch -M main
-git push -u origin main
+git clone https://github.com/charchilkhandelwal2522/Audit.git
+cd Audit
 ```
 
 ## License
